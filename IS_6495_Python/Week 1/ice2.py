@@ -40,10 +40,9 @@ print(greeting)
 # •    Prints your name in title case, uppercase, and lowercase using string methods.
 
 my_name = "Jamison Orton"
-uppercase = str(my_name).capitalize
-print(my_name)
-print(uppercase)
-
+print(my_name.title())
+print(my_name.upper())
+print(my_name.lower())
 
 ###### Part 5 ########
 # 5. Mathematical Operations
