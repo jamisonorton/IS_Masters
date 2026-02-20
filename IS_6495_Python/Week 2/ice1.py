@@ -17,7 +17,8 @@ vegitables = input("What is the cost of the vegitables in your cart? ")
 meats = input("What is the cost of the meats in your cart? ")
 dairy_products = input("What is the cost of the dairy products in your cart? ")
 total = float(fruits) + float(vegitables) + float(meats) + float(dairy_products)
-print(f"The total price of your cart is ${total}")
+formatted = f"{total:.2f}"
+print(f"The total price of your cart is ${formatted}")
 
 
 ###### Part 2 ########
@@ -44,4 +45,5 @@ book_in_euros = input("What is the price of a book in Euros? ")
 books_to_purchase = input("How many books are you going to purchase? ")
 exchange_rate = input("EUR €1 = How many usd? (currently its $1.08)")
 total = float(book_in_euros) * int(books_to_purchase) * float(exchange_rate)
-print(f"The total price of your books are ${total}")
+formatted = f"{total:.2f}"
+print(f"The total price of your books are ${formatted}")
