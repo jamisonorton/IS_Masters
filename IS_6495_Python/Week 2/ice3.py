@@ -26,3 +26,15 @@ print(f"Total Sum: {total_sum}")
 # 4.    After exiting the loop, calculate the average temperature in Celsius.
 # 5.    Format and display the average temperature to the user.
 # 6.    End the program.
+
+total_temperature = 0
+amount_entered = 0
+user_input = input("Please enter a temperature in Fahrenheit or 'done' to finish... ")
+while user_input != "done":
+    user_temperature = float(user_input)
+    celsius_temperature = 5 / 9 * (user_temperature - 32)
+    total_temperature += celsius_temperature
+    amount_entered += 1
+    user_input = input("Please enter a temperature in Fahrenheit or 'done' to finish... ")
+average_temp = total_temperature / amount_entered
+print(f"The average temperature was {average_temp}")
