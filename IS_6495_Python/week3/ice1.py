@@ -1,17 +1,17 @@
 #1.1. Creating and Modifying a List (2.5 points)
 # Create a list of four different sports of your choice, modify it by adding and removing elements, and print the updated list.
 
-# sports = ['Ultimate Frisbee', 'Soccer', 'Basketball', 'Football']
-# sports.append('Rugby')
-# print(sports)
+sports = ['Ultimate Frisbee', 'Soccer', 'Basketball', 'Football']
+sports.append('Rugby')
+print(sports)
 
-# sports.remove('Football')
-# print(sports)
+sports.remove('Football')
+print(sports)
 
-# greatest_sport = sports.pop(0)
-# print(greatest_sport)
+greatest_sport = sports.pop(0)
+print(greatest_sport)
 
-# print(sports)
+print(sports)
 
 
 #1.2. Copying and Modifying Lists (2.5 points)
