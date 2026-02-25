@@ -1,6 +1,7 @@
 # Exercise 1: (3 points)
 # Given the list below, write a program that counts the # of A’s (scores between 90 and 100). Extension: Count the # of B’s, C’s, D’s and F’s.
 # Hint: use an if-elif-else condition inside a for loop.
+
 grades = [90,100,70,45,76,84,93,21,36,99,100]
 count_a = 0
 count_b = 0
@@ -34,6 +35,7 @@ print(count_f)
 # 70 to 80: +5 points
 # Lower than 70: +8 points
 # Use the below test scores list:
+
 grades = [93, 74, 66, 98, 34, 75, 79, 83, 84, 91, 12, 69, 72]
 
 new_grades = grades.copy()
@@ -44,6 +46,7 @@ new_grades = grades.copy()
 # Else if score is greater or equal to 70 but less than 80, add 5 points.
 # Else, add 8 points
 # Print out the new grades.
+
 for i in range(len(new_grades)):
     if new_grades[i] in range(90,101):
         continue
@@ -68,6 +71,7 @@ print(new_grades)
 # Enter sales for Day #6: 600
 # Enter sales for Day #7: 700
 # Sales for the week: [100,200,300,400,500,600,700]
+
 days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'] 
 
 sales = []
@@ -84,6 +88,7 @@ print(sales)
 # # Extract the first 3 elements of the list into a new list
 # # Extract the characters b, c, and d into a new list
 # # Extract the last 4 characters into a new list
+
 my_list = ['a', 'b', 'c', 'd', 'e', 'f', 'g']
 
 first_three = my_list[:3]
@@ -101,6 +106,7 @@ print(last_four)
 # Given the following lists, write a program that lets the user type in the name of a product. 
 # If the product name exists in our inventory, you should print out that it is in our inventory. 
 # Otherwise you should print out that the product is not found. Ensure that your program is case insensitive (i.e. searches for "Apple" or "apple" or "APPLE" should all succeed).
+
 products = ["apple", "pear", "peach", "banana"]
 
 user_input = input("Please enter a product: ").strip().lower()
@@ -117,6 +123,7 @@ else:
 # Store your results in a list and print it out to the user. 
 # The expected answer is: [1, 2, 3]
 # Two lists:
+
 a = [1,2,3,4,5]
 
 b = [2,3,10,11,12,1]
@@ -140,6 +147,7 @@ print(overlap)
 # Write a program that continually prompts a user to enter in a series of first names. 
 # The user can elect to stop entering names when they supply the string "end." Store these first names in a list and print them out at the end of your program. 
 # Extension: Prevent the user from entering duplicate names (hint: use the in operator).
+
 names = []
 
 while True:
