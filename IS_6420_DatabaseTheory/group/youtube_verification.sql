@@ -1,3 +1,4 @@
+
     SELECT 'SubscriptionStatus' AS Dim, SubscriptionStatus AS Value, COUNT(*) AS Cnt
     FROM group6.Subscription
     GROUP BY SubscriptionStatus
