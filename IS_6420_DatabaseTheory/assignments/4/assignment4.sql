@@ -150,7 +150,7 @@ GO
 
 
 -- b. Run the function (experiment with different parameters)
-SELECT Lab001.CalculateDiscountedPrice(102, .50)
+SELECT Lab001.CalculateDiscountedPrice(102, .50) AS DiscountedPrice
 GO
 
 -- c. Create a new function called Lab001.calculate_discounted_percent that takes 
@@ -171,5 +171,5 @@ GO
 -- For example, if ProductID 103 was discounted to $29.50 it would return approx 0.81
 
 -- d. Run the function discounting ProductID 103 to $29.50 and take a screenshot
-SELECT Lab001.calculate_discounted_percent(103, 29.50)
+SELECT Lab001.calculate_discounted_percent(103, 29.50) AS DiscountedPercent
 GO
