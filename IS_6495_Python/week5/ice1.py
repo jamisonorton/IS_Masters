@@ -1,12 +1,11 @@
 # 1.1. Hello World (again) (3 points)
 # Write a function that asks for the user’s name and prints “Hello, “ followed by their name.
 def hello_world(name):
-    return name
+    return f"Hello, {name}"
 
 
 full_name = input("What is your full name? ")
-
-print("Hello,", hello_world(full_name))
+print(hello_world(full_name))
 
 
 # 1.2. Dog Years (3 points)
@@ -18,17 +17,15 @@ def years_to_dog_years(age):
     return age * 7
 
 
-dog_age = input("How old is your dog? ")
-
-print("Your dog is", years_to_dog_years(int(dog_age)), "years old.")
+dog_age = int(input("How old is your dog? "))
+print(f"Your dog is {years_to_dog_years(dog_age)} years old in dog years.")
 
 
 # 1.3. Purchase (3 points)
 # Write a function that asks for the user to enter a number of items they wish to purchase.
-def purchages(num1):
-    return num1
+def purchages(num_items):
+    return f"You wish to purchase {num_items} items"
 
 
-user_purchases = input("How many items do you wish to purchase? ")
-
-print("You are purchasing", purchages(int(user_purchases)), "items")
+user_purchases = int(input("How many items do you wish to purchase? "))
+print(purchages(user_purchases))
