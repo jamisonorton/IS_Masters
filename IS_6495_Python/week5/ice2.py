@@ -1,6 +1,6 @@
 # 2.1. Sum of numbers (3 points)
 # Write a function that takes a list of numbers and returns the sum of the numbers.
-crappy_list = [1, 15, 25, 50, 100]
+crappy_list = [1, 2, 3, 4, 5]
 
 
 def sum_from_list(numbers):
@@ -29,10 +29,11 @@ print(num_power(3, 4))
 
 
 def taxes_owed(price):
-    return (price * 0.07) + price
+    tax_rate = 0.07
+    return price * (1 + tax_rate)
 
 
-print(taxes_owed(25))
+print(f"${taxes_owed(10):.2f}")
 
 
 # 2.4. Average function (3 points)
@@ -42,4 +43,4 @@ def avg_func(num1, num2, num3):
     return (num1 + num2 + num3) / total
 
 
-print(avg_func(1, 10, 100))
+print(avg_func(1, 3, 5))
