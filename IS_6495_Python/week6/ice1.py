@@ -2,6 +2,19 @@
 # Write a function that takes 3 strings - first name, last name and middle initial.
 # Return one string that has the person’s full name.  Make sure that the first letter of each name is capitalized (.title()) and then return the string.
 # Use the .format() string function in the return statement.
+def full_name(first_name, last_name, middle_initial):
+    first_name = first_name.title()
+    last_name = last_name.title()
+    middle_initial = middle_initial.title()
+
+    return str.format(first_name + " " + middle_initial + " " + last_name)
+
+
+first_name = input("What is your First name? ")
+last_name = input("What is your Last name? ")
+middle_initial = input("What is your Middle initial? ")
+
+print("Your name is:", full_name(first_name, last_name, middle_initial))
 
 
 # 2. String function practice (5 points)
