@@ -108,16 +108,15 @@ except FileNotFoundError:
 file_name = "week6/testscores.txt"
 
 with open(file_name, "r") as file:
-    contents = file.read()
-    values = contents.split("\n")
+    student_name = ""
+    scores = []
 
-values = [item.strip() for item in values if item.strip() != ""]
+    for line in file:
+        line = line.strip()
+        if line.isnumeric():
+            scores.append(int(line))
+        else:
+            student_name = line
 
-for i in range(0, len(values), 4):
-    student_name = values[i]
-    score1 = int(values[i + 1])
-    score2 = int(values[i + 2])
-    score3 = int(values[i + 3])
-
-    average = (score1 + score2 + score3) / 3
+    average = sum(scores) / len(scores)
     print(student_name, average)
