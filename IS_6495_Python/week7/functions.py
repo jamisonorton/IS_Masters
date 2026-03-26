@@ -14,7 +14,7 @@ def booleanYesNoConverter(val):
 
 
 def nullToBooleanConverter(value):
-    return value != None
+    return value is not None
 
 
 def moveQueueValueConverter(val):
@@ -39,7 +39,7 @@ def fahrenheit_To_Celsius(val):
 
 
 def celsius_To_Fahrenheit(val):
-    fahrenheit = (val / (5 / 9)) + 32
+    fahrenheit = (val * 9 / 5) + 32
 
     return fahrenheit
 

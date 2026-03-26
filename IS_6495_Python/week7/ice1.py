@@ -15,7 +15,7 @@
 
 # Using the print() function, test and invoke the celsius and Fahrenheit functions.
 import functions as func
-import random as random
+import random
 
 print(func.celsius_To_Fahrenheit(100))
 
