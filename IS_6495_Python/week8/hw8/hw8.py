@@ -219,3 +219,6 @@ class Project:
             else:
                 if user_selection != "exit":
                     print("Invalid selection. Please try again\n")
+                    
+project = Project()
+project.run()
