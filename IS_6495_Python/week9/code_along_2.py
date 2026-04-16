@@ -1,6 +1,9 @@
 # week 9 code along 2
 import db_base as db
 import csv
+import pandas as pd
+import seaborn as sns
+import matplotlib.pyplot as plt
 
 
 class CollegeScoreCard:
@@ -46,7 +49,7 @@ class CsvLab(db.DBbase):
         try:
             with open(file_name, "r") as record:
                 csv_contents = csv.reader(record)
-                next(record)
+                next(csv_contents)
                 for row in csv_contents:
                     # print(row)
                     college = CollegeScoreCard(row)
@@ -92,7 +95,44 @@ class CsvLab(db.DBbase):
         else:
             print("Save to DB aborted")
 
+    def visualize_data(self):
+
+        df = pd.read_sql_query("SELECT * FROM CollegeScoreCard", super().get_connection)
+        print(df.head())
+        print(df.info)
+
+        print(df[df["state_abbr"] == "CA"]["act_med"])
+        print(self.columns(df))
+        states = df.groupby("state_abbr")
+        print("MAX SAT = ", self.max_act(states))
+        print(round(states.mean(numeric_only=True)["tuition"].min(), 2))
+        print(round(states.mean(numeric_only=True)["tuition"].max(), 2))
+
+        # using pandas for insights
+        print("# of unique states", df["state_abbr"].nunique())
+        print(df.corr(numeric_only=True))
+        states = df.groupby("state_abbr")
+        print("MAX SAT = ", self.max_act(states))
+        print(round(states.mean(numeric_only=True)["tuition"].min(), 2))
+        print(round(states.mean(numeric_only=True)["tuition"].max(), 2))
+        print("Mean tuition rate", round(df["tuition"].mean(numeric_only=True), 2))
+        print("Mean SAT_Score rate", round(df["sat_avg"].mean(numeric_only=True), 2))
+
+        # using seaborn
+        sns.displot(df["tuition"])
+        plt.show()
+
+        sns.heatmap(df.corr(numeric_only=True), cmap="coolwarm")
+        plt.show()
+
+    def max_act(self, series):
+        return series["sat_avg"].max()
+
+    def columns(self, series):
+        return series.columns
+
 
 csv_lab = CsvLab("CollegeScoreCardDB.sqlite")
-csv_lab.read_college_data("week9/CollegeScoreCard_Exercise.csv")
-csv_lab.save_to_database()
+# csv_lab.read_college_data("week9/CollegeScoreCard_Exercise.csv")
+# csv_lab.save_to_database()
+csv_lab.visualize_data()
