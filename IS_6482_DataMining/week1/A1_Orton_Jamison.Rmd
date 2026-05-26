@@ -1,0 +1,61 @@
+---
+title: "A1_Orton_Jamison"
+output: 
+  html_document: 
+    toc: true
+    toc_depth: 4
+---
+
+# Loading Packages
+
+```{r loading packages}
+library(tidyverse)
+library(caret)
+library(RWeka)
+```
+
+# Building first dataframe
+
+```{r customer dataframe}
+first_name <- c("John","Jane","Sam","Travis","Cindy")
+last_name <- c("Smith","Dow","Alvares","Marks","Lou")
+age <- c(21,52,33,16,41)
+home_state <-c("AZ","UT","CA","MO","FL")
+df <- data.frame(first_name,last_name,age,home_state)
+df
+nrow(df)
+ncol(df)
+dim(df)
+```
+## Observations
+
+Something I observe in this dataframe is that there 5 rows (corresponding to 5 different customers) and 4 columns (corresponding to firstname, lastname, age, and state). There are 3 columns of the char type and only 1 of integer. The nice thing is that when you look at the dataframe all 5 rows have data in them so each vector has 5 items in them.
+
+# Multiply_six Function
+
+```{r first function (multiply_six)}
+multiply_six <- function(a) {
+  a * 6
+}
+```
+
+## Using the function
+
+```{r using multiply_six}
+first_vector <- c(1,2,3,4,5,6)
+
+second_vector <- multiply_six(first_vector)
+second_vector
+
+third_vector <- multiply_six(second_vector)
+third_vector
+
+fourth_vector <- multiply_six(third_vector)
+fourth_vector
+
+fifth_vector <- multiply_six(fourth_vector)
+fifth_vector
+
+sixth_vector <- multiply_six(fifth_vector)
+sixth_vector
+```
