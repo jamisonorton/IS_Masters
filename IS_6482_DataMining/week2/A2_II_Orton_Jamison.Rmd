@@ -1,0 +1,323 @@
+---
+title: "CD data mining assignment"
+author: "Jamison Orton"
+date: "2026-05-27"
+output: 
+  html_document: 
+    number_sections: true
+    toc: true
+editor_options: 
+  chunk_output_type: inline
+---
+
+# Libraries
+``` {r Library}
+library(rmarkdown)
+library(psych)
+library(scatterplot3d)
+library(caret)
+library(tidyverse)
+```
+
+## Import a csv file
+``` {r Set up, data import and inspection}
+cd <- read.csv(file = "CD_additional_balanced.csv", stringsAsFactors = FALSE)
+cd %>% str()
+nrow(cd)
+ncol(cd)
+```
+
+## Transform chr variables
+``` {r Transform character variables to factors, show structure and summary}
+cd <- cd %>% 
+  mutate(across(where(is.character), as.factor))
+
+cd %>% str()
+cd %>% summary()
+```
+
+# Creating histogram, boxplot, and deciles for age, duration, campaign, and pdays
+
+## Create histogram
+### age
+``` {r Creating histogram for age}
+cd %>% 
+  ggplot(aes(x = age)) +
+  geom_histogram(binwidth = 10) +
+  ggtitle("Histogram of age in the cd data set")
+```
+
+### duration
+``` {r Creating histogram for duration}
+cd %>% 
+  ggplot(aes(x = duration)) +
+  geom_histogram(binwidth = 200) +
+  ggtitle("Histogram of duration in the cd data set")
+```
+
+### campaign
+``` {r Creating histogram for campaign}
+cd %>% 
+  ggplot(aes(x = campaign)) +
+  geom_histogram(binwidth = 1) +
+  ggtitle("Histogram of campaign in the cd data set")
+```
+
+### pdays
+``` {r Creating histogram for pdays}
+cd %>% 
+  ggplot(aes(x = pdays)) +
+  geom_histogram(binwidth = 500) +
+  ggtitle("Histogram of pdays in the cd data set")
+```
+
+## Create boxplot
+### age
+``` {r Creating boxplot of cd age}
+cd %>%
+ ggplot(aes(x=age)) +
+ geom_boxplot() +
+ ggtitle('Boxplot of age in the cd data set')
+```
+
+### duration
+``` {r Creating boxplot of cd duration}
+cd %>%
+ ggplot(aes(x=duration)) +
+ geom_boxplot() +
+ ggtitle('Boxplot of duration in the cd data set')
+```
+
+### campaign
+``` {r Creating boxplot of cd campaign}
+cd %>%
+ ggplot(aes(x=campaign)) +
+ geom_boxplot() +
+ ggtitle('Boxplot of campaign in the cd data set')
+```
+
+### pdays
+``` {r Creating boxplot of cd pdays}
+cd %>%
+ ggplot(aes(x=pdays)) +
+ geom_boxplot() +
+ ggtitle('Boxplot of pdays in the cd data set')
+```
+
+## Show deciles
+``` {r Show deciles of the variable}
+cd %>%
+  select(age, duration, campaign, pdays) %>%
+  map(~ quantile(.x, probs = seq(0, 1, 0.1), na.rm = TRUE))
+```
+
+# Explore factor variables
+## Show the count and proportion for each level of the factor variables y, job, education and poutcome
+### y
+``` {r Count and proportion for y}
+cd %>%
+  group_by(y) %>%
+  summarize(n = n()) %>%
+  mutate(prop = n/sum(n))
+```
+
+### job
+``` {r Count and proportion for job}
+cd %>%
+  group_by(job) %>%
+  summarize(n = n()) %>%
+  mutate(prop = n/sum(n))
+```
+
+### education
+``` {r Count and proportion for education}
+cd %>%
+  group_by(education) %>%
+  summarize(n = n()) %>%
+  mutate(prop = n/sum(n))
+```
+
+### poutcome
+``` {r Count and proportion for poutcome}
+cd %>%
+  group_by(poutcome) %>%
+  summarize(n = n()) %>%
+  mutate(prop = n/sum(n))
+```
+
+## Show a bar plot of the variable's counts y, job, education and poutcome
+### y
+``` {r Bar plot for y}
+cd %>%
+  ggplot() +
+  geom_bar(aes(x=y,fill=y)) +
+  ggtitle('barplot of y')
+```
+
+### job
+``` {r Bar plot for job}
+cd %>%
+  ggplot() +
+  geom_bar(aes(x=job,fill=job)) +
+  ggtitle('barplot of job') +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+### education
+``` {r Bar plot for education}
+cd %>%
+  ggplot() +
+  geom_bar(aes(x=education,fill=education)) +
+  ggtitle('barplot of education') +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+### poutcome
+``` {r Bar plot for poutcome}
+cd %>%
+  ggplot() +
+  geom_bar(aes(x=poutcome,fill=poutcome)) +
+  ggtitle('barplot of poutcome')
+```
+
+# Explore relationships amongst multiple variables
+## Use cor and pairs.panels to display correlations for these seven numeric variables – age, duration, campaign, pdays, euribor3m, emp.var.rate, and nr.employed
+### cor
+``` {r correlation - age, duration, campaign, pdays, euribor3m, emp.var.rate, and nr.employed}
+cd %>%
+  select(age, duration, campaign, pdays, euribor3m, emp.var.rate, nr.employed) %>%
+  cor()
+```
+
+### pairs.panels
+``` {r pairs.panels}
+cd %>%
+  select(age, duration, campaign, pdays, euribor3m, emp.var.rate, nr.employed) %>%
+  pairs.panels()
+```
+
+## For each of these numeric variables - duration, emp.var.rate, cons.price.idx, and cons.conf.idx.
+### Show a boxplot of this numeric variable by y
+#### duration
+``` {r boxplot for duration by y}
+cd %>% 
+  ggplot(aes(x = y, y = duration, color = y)) +
+  geom_boxplot() +
+  ggtitle("Duration by y")
+```
+
+#### emp.var.rate
+``` {r boxplot for emp.var.rate by y}
+cd %>% 
+  ggplot(aes(x = y, y = emp.var.rate, color = y)) +
+  geom_boxplot() +
+  ggtitle("Employment Variation Rate by y")
+```
+
+#### cons.price.idx
+``` {r boxplot for cons.price.idx by y}
+cd %>% 
+  ggplot(aes(x = y, y = cons.price.idx, color = y)) +
+  geom_boxplot() +
+  ggtitle("Consumer Price Index by y")
+```
+
+#### cons.conf.idx
+``` {r boxplot for cons.conf.idx by y}
+cd %>% 
+  ggplot(aes(x = y, y = cons.conf.idx, color = y)) +
+  geom_boxplot() +
+  ggtitle("Consumer Confidence Index by y")
+```
+
+### Use the aggregate function with 'summary' to aggregate this variable by y. The output should be the six number statistics (i.e. min., 1st quantile, median, mean, 3rd quantile, and max.) of the variable (e.g., duration)aggregated by “yes” and “no” respectively of y
+#### duration
+``` {r aggregate duration}
+aggregate(duration~y, summary, data = cd)
+```
+
+#### emp.var.rate
+``` {r aggregate emp.var.rate}
+aggregate(emp.var.rate~y, summary, data = cd)
+```
+
+#### cons.price.idx
+``` {r aggregate cons.price.idx}
+aggregate(cons.price.idx~y, summary, data = cd)
+```
+
+#### cons.conf.idx
+``` {r aggregate cons.conf.idx}
+aggregate(cons.conf.idx~y, summary, data = cd)
+```
+
+# Observations
+Here are my findings from my exploration.
+
+## How much data do we have?
+The dataset contains 9,280 observations and 21 variables. This means there are 9,280 rows and 21 columns in the data. Each row represents one customer/contact record, and each column represents one variable about the customer, campaign contact, economic conditions, or the final response variable `y`.
+
+## Shape and structure of the data
+Before transformation, several variables were stored as character variables. These included categorical variables such as `job`, `marital`, `education`, `default`, `housing`, `loan`, `contact`, `month`, `day_of_week`, `poutcome`, and `y`. These were converted to factor variables because they represent categories rather than continuous numeric values.
+
+After transforming the character variables to factors, the dataset contains a mix of numeric and factor variables. The numeric variables include variables such as `age`, `duration`, `campaign`, `pdays`, `emp.var.rate`, `cons.price.idx`, `cons.conf.idx`, `euribor3m`, and `nr.employed`. The factor variables describe categorical information such as job type, education level, previous campaign outcome, and whether the customer subscribed to the term deposit.
+
+## Distribution of numeric variables
+The variable `age` appears to be centered around middle-aged adults, with most observations falling in the adult working-age range. The histogram and boxplot show that age has some older outliers, but the overall distribution is not extremely spread out.
+
+The variable `duration` is strongly right-skewed. Most calls are relatively short, but there are some much longer calls that appear as outliers in the boxplot. This suggests that a small number of customers had much longer contact durations than the majority.
+
+The variable `campaign` is also right-skewed. Most customers were contacted only a small number of times during the campaign, while a smaller number of customers were contacted many times. The boxplot shows outliers for customers with unusually high campaign contact counts.
+
+The variable `pdays` has an unusual distribution. Many observations have the same high value, likely representing customers who were not previously contacted. This makes the distribution less continuous than variables such as `age` or `duration`.
+
+The deciles support these observations because they show how the values are spread across the dataset. For example, the lower and middle deciles for variables like `campaign` and `duration` are relatively small, while the upper deciles and maximum values are much larger, showing right-skewness.
+
+## Distribution of factor variables
+The response variable `y` has two levels: `yes` and `no`. Because this is the balanced version of the CD dataset, the counts for `yes` and `no` are approximately equal. This is useful for modeling because the target variable is not dominated by one class.
+
+The variable `job` has several categories. Some job groups appear much more frequently than others. The bar plot shows which job categories are most common in the dataset.
+
+The variable `education` also has multiple levels. Some education categories are more common than others, and the bar plot makes it easier to compare the relative frequency of each education group.
+
+The variable `poutcome` shows the outcome of the previous marketing campaign. The count table and bar plot show that some previous outcomes are much more common than others. This variable may be useful because it gives information about whether the customer had a successful or unsuccessful outcome in a prior campaign.
+
+## Relationships between numeric variables
+
+The correlation matrix and `pairs.panels()` plot show relationships among the numeric variables `age`, `duration`, `campaign`, `pdays`, `euribor3m`, `emp.var.rate`, and `nr.employed`.
+
+One important trend is that the economic variables appear to be strongly related to each other. For example, `euribor3m`, `emp.var.rate`, and `nr.employed` show noticeable correlations. This makes sense because they all describe economic or employment conditions.
+
+The variable `duration` does not appear to be strongly correlated with most of the other numeric variables. However, based on the boxplots by `y`, `duration` appears to differ between customers who subscribed and customers who did not. Customers with `y = yes` appear to have longer call durations than customers with `y = no`.
+
+The variable `campaign` appears to have a weaker relationship with the response variable. Customers contacted many times do not necessarily appear more likely to subscribe. The distribution is also very skewed, with many customers contacted only a few times.
+
+## Boxplots and aggregate summaries by y
+
+The boxplot of `duration` by `y` shows one of the clearest differences between the `yes` and `no` groups. Customers who subscribed to the term deposit generally had longer call durations. The aggregate summary supports this because the mean and median duration for `y = yes` are higher than the mean and median duration for `y = no`.
+
+The boxplot of `emp.var.rate` by `y` also shows differences between the two groups. The distribution of employment variation rate appears different for customers who subscribed compared to customers who did not.
+
+The boxplot of `cons.price.idx` by `y` shows some difference between the groups, but the separation may not be as strong as with `duration`.
+
+The boxplot of `cons.conf.idx` by `y` also shows differences in the distribution between `yes` and `no`, suggesting that consumer confidence may have some relationship with whether a customer subscribed.
+
+## Interesting trends
+
+One interesting trend is that call duration appears to be strongly related to the response variable `y`. Customers who subscribed tended to have longer calls. This makes intuitive sense because a customer who is interested in the product may stay on the phone longer.
+
+Another interesting trend is that the economic variables are related to each other. Variables such as `euribor3m`, `emp.var.rate`, and `nr.employed` appear to move together. These variables may provide similar information, so it would be important to watch for multicollinearity if building a predictive model.
+
+The `pdays` variable also stands out because many observations appear to have the same value. This suggests that the variable may include a special code for customers who were not previously contacted. Because of this, it may need special attention when used in modeling.
+
+## Variables that may be useful for predicting y
+
+If I were trying to predict the response variable `y`, I would expect `duration` to be one of the most useful variables because the boxplot and aggregate summary show a clear difference between the `yes` and `no` groups.
+
+I would also expect `poutcome` to be useful because the outcome of a previous campaign may help predict whether a customer subscribes in the current campaign.
+
+The economic variables, including `emp.var.rate`, `cons.price.idx`, `cons.conf.idx`, `euribor3m`, and `nr.employed`, may also be useful because they describe the broader economic environment at the time of contact. The correlation analysis shows that some of these variables are related to each other, so a model may not need all of them.
+
+Other factor variables such as `job` and `education` may also help predict `y`, since different customer groups may respond differently to marketing campaigns.
+
+Overall, the variables I would most suspect to be useful for predicting `y` are `duration`, `poutcome`, `emp.var.rate`, `euribor3m`, and possibly `nr.employed`, along with selected demographic variables such as `job` and `education`.
