@@ -1,0 +1,110 @@
+---
+title: "Decision Tree Classification and Evaluation"
+author: "Jamison Orton"
+date: "2026-06-09"
+output: 
+  html_document: 
+    number_sections: true
+    toc: true
+editor_options: 
+  chunk_output_type: inline
+---
+
+# Task 1: Data and Decision Tree
+
+## Part 1 - Set up, data import and inspection code
+```{r library}
+library(C50)
+library(caret)
+library(rminer)
+library(tictoc)
+library(tidyverse)
+```
+```{r Set up, data import and inspection}
+cd <- read.csv(file = "CD_additional_balanced-1.csv", stringsAsFactors = FALSE)
+```
+```{r structure aka str}
+cd %>% str()
+```
+```{r transform char to factor and show overall structure and summary}
+cd <- cd %>% mutate(across(where(is.character), as.factor))
+
+cd %>% str()
+
+cd %>% summary()
+```
+## Part 2 - Target variable
+``` {r show count for target variable and percentage of instances belonging to that level}
+cd %>% count(y) %>% mutate(percentage = round(n / sum(n) * 100, 2))
+```
+
+## Part 3 - Data preparation
+``` {r Partition data set for simple hold-out classification model building and evaluation (show summary of train and test sets)}
+set.seed(123)
+
+train_index <- createDataPartition(cd$y, p = 0.70, list = FALSE)
+
+train <- cd[train_index, ]
+test <- cd[-train_index, ]
+
+train %>% summary()
+test %>% summary()
+```
+``` {r show count and distributions of y in the train set and in the test set}
+train %>%
+  count(y) %>%
+  mutate(percent = round(n / sum(n) * 100, 2))
+
+test %>%
+  count(y) %>%
+  mutate(percent = round(n / sum(n) * 100, 2))
+```
+## Part 4 - Train Decision Trees to classify y
+``` {r train 7 models at various CF}
+c50_control <- C5.0Control(
+  earlyStopping = FALSE,
+  noGlobalPruning = FALSE
+)
+
+model_cf_97 <- C5.0(formula = y ~ ., data = train, control = c50_control, CF = 0.97)
+model_cf_35 <- C5.0(formula = y ~ ., data = train, control = c50_control, CF = 0.35)
+model_cf_12 <- C5.0(formula = y ~ ., data = train, control = c50_control, CF = 0.12)
+model_cf_08 <- C5.0(formula = y ~ ., data = train, control = c50_control, CF = 0.08)
+model_cf_05 <- C5.0(formula = y ~ ., data = train, control = c50_control, CF = 0.05)
+model_cf_025 <- C5.0(formula = y ~ ., data = train, control = c50_control, CF = 0.025)
+model_cf_001 <- C5.0(formula = y ~ ., data = train, control = c50_control, CF = 0.001)
+
+model_cf_001
+```
+
+## Part 5 - Model Information
+``` {r}
+
+```
+
+## Part 6 - Predict on the Train and Test sets with each trained model
+``` {r}
+
+```
+
+## Part 7 - Generate Confusion Matrices for each trained Model for both Train and Test
+``` {r}
+
+```
+
+## Part 8 - Generate Evaluation Metrics for each Model
+``` {r}
+
+```
+
+## Part 9 - Show the feature importance for each Model
+``` {r}
+
+```
+
+## Part 10 (OPTIONAL) - Generate a Graph showing Train and Test Accuracy for each model
+``` {r}
+
+```
+
+# Task 2: Reflections
