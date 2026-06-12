@@ -61,45 +61,265 @@ test %>%
 ```
 ## Part 4 - Train Decision Trees to classify y
 ``` {r train 7 models at various CF}
-c50_control <- C5.0Control(
-  earlyStopping = FALSE,
-  noGlobalPruning = FALSE
-)
+train_c50_model <- function(cf_value) {
+  C5.0(
+    y ~ .,
+    data = train,
+    control = C5.0Control(
+      CF = cf_value,
+      earlyStopping = FALSE,
+      noGlobalPruning = FALSE
+    )
+  )
+}
 
-model_cf_97 <- C5.0(formula = y ~ ., data = train, control = c50_control, CF = 0.97)
-model_cf_35 <- C5.0(formula = y ~ ., data = train, control = c50_control, CF = 0.35)
-model_cf_12 <- C5.0(formula = y ~ ., data = train, control = c50_control, CF = 0.12)
-model_cf_08 <- C5.0(formula = y ~ ., data = train, control = c50_control, CF = 0.08)
-model_cf_05 <- C5.0(formula = y ~ ., data = train, control = c50_control, CF = 0.05)
-model_cf_025 <- C5.0(formula = y ~ ., data = train, control = c50_control, CF = 0.025)
-model_cf_001 <- C5.0(formula = y ~ ., data = train, control = c50_control, CF = 0.001)
+model_cf_97 <- train_c50_model(0.97)
+model_cf_35 <- train_c50_model(0.35)
+model_cf_12 <- train_c50_model(0.12)
+model_cf_08 <- train_c50_model(0.08)
+model_cf_05 <- train_c50_model(0.05)
+model_cf_025 <- train_c50_model(0.025)
+model_cf_001 <- train_c50_model(0.001)
 
-model_cf_001
 ```
 
 ## Part 5 - Model Information
-``` {r}
+### Part A
+``` {r part a}
+tree_sizes <- data.frame(
+  model = c(
+    "model_cf_97",
+    "model_cf_35",
+    "model_cf_12",
+    "model_cf_08",
+    "model_cf_05",
+    "model_cf_025",
+    "model_cf_001"
+  ),
+  
+  CF = c(0.97, 0.35, 0.12, 0.08, 0.05, 0.025, 0.001),
+  
+  tree_size = c(
+    model_cf_97$size,
+    model_cf_35$size,
+    model_cf_12$size,
+    model_cf_08$size,
+    model_cf_05$size,
+    model_cf_025$size,
+    model_cf_001$size
+  )
+)
 
+tree_sizes
 ```
+### Part B
+Tree complexity is based on tree size. Tree size represents the number of terminal decision rules in the model. A tree with more leaf nodes is more complex reuiring more specific rules for classifying observations. A tree with fewer leaf nodes is less complex and uses fewer rules and is easier to interpret.
+
+### Part C
+```{r plot-least-complex-tree, fig.height=8, fig.width=20}
+plot(least_complex_model)
+```
+### Part D
+``` {r show least_complex_model and then explain steps}
+least_complex_model
+```
+The least complex tree begins by checking the value of nr.employed if it is <= 5076.2 then it will go to duration. In the instance of nr.employed = 6000 and duration = 500 the model predicts yes as it is yes 80% of the time.
 
 ## Part 6 - Predict on the Train and Test sets with each trained model
-``` {r}
+``` {r generate-train-test-predictions}
+# Predictions on the Train set
+pred_train_cf_97 <- predict(model_cf_97, newdata = train)
+pred_train_cf_35 <- predict(model_cf_35, newdata = train)
+pred_train_cf_12 <- predict(model_cf_12, newdata = train)
+pred_train_cf_08 <- predict(model_cf_08, newdata = train)
+pred_train_cf_05 <- predict(model_cf_05, newdata = train)
+pred_train_cf_025 <- predict(model_cf_025, newdata = train)
+pred_train_cf_001 <- predict(model_cf_001, newdata = train)
 
+# Predictions on the Test set
+pred_test_cf_97 <- predict(model_cf_97, newdata = test)
+pred_test_cf_35 <- predict(model_cf_35, newdata = test)
+pred_test_cf_12 <- predict(model_cf_12, newdata = test)
+pred_test_cf_08 <- predict(model_cf_08, newdata = test)
+pred_test_cf_05 <- predict(model_cf_05, newdata = test)
+pred_test_cf_025 <- predict(model_cf_025, newdata = test)
+pred_test_cf_001 <- predict(model_cf_001, newdata = test)
 ```
 
 ## Part 7 - Generate Confusion Matrices for each trained Model for both Train and Test
-``` {r}
+``` {r confusion-matrices-train-test}
+# Confusion matrices for the Train set
+cm_train_cf_97 <- confusionMatrix(pred_train_cf_97, train$y)
+cm_train_cf_35 <- confusionMatrix(pred_train_cf_35, train$y)
+cm_train_cf_12 <- confusionMatrix(pred_train_cf_12, train$y)
+cm_train_cf_08 <- confusionMatrix(pred_train_cf_08, train$y)
+cm_train_cf_05 <- confusionMatrix(pred_train_cf_05, train$y)
+cm_train_cf_025 <- confusionMatrix(pred_train_cf_025, train$y)
+cm_train_cf_001 <- confusionMatrix(pred_train_cf_001, train$y)
 
+# Confusion matrices for the Test set
+cm_test_cf_97 <- confusionMatrix(pred_test_cf_97, test$y)
+cm_test_cf_35 <- confusionMatrix(pred_test_cf_35, test$y)
+cm_test_cf_12 <- confusionMatrix(pred_test_cf_12, test$y)
+cm_test_cf_08 <- confusionMatrix(pred_test_cf_08, test$y)
+cm_test_cf_05 <- confusionMatrix(pred_test_cf_05, test$y)
+cm_test_cf_025 <- confusionMatrix(pred_test_cf_025, test$y)
+cm_test_cf_001 <- confusionMatrix(pred_test_cf_001, test$y)
+```
+```{r show-confusion-matrices}
+cm_train_cf_97
+cm_train_cf_35
+cm_train_cf_12
+cm_train_cf_08
+cm_train_cf_05
+cm_train_cf_025
+cm_train_cf_001
+cm_test_cf_97
+cm_test_cf_35
+cm_test_cf_12
+cm_test_cf_08
+cm_test_cf_05
+cm_test_cf_025
+cm_test_cf_001
 ```
 
 ## Part 8 - Generate Evaluation Metrics for each Model
-``` {r}
+```{r evaluation-metrics}
+# Metrics requested: F1, Accuracy, Precision, and Recall/TPR
+metric_list <- c("F1", "ACC", "PRECISION", "TPR")
 
+# Train set metrics
+metrics_train_cf_97 <- mmetric(train$y, pred_train_cf_97, metric = metric_list)
+metrics_train_cf_35 <- mmetric(train$y, pred_train_cf_35, metric = metric_list)
+metrics_train_cf_12 <- mmetric(train$y, pred_train_cf_12, metric = metric_list)
+metrics_train_cf_08 <- mmetric(train$y, pred_train_cf_08, metric = metric_list)
+metrics_train_cf_05 <- mmetric(train$y, pred_train_cf_05, metric = metric_list)
+metrics_train_cf_025 <- mmetric(train$y, pred_train_cf_025, metric = metric_list)
+metrics_train_cf_001 <- mmetric(train$y, pred_train_cf_001, metric = metric_list)
+
+# Test set metrics
+metrics_test_cf_97 <- mmetric(test$y, pred_test_cf_97, metric = metric_list)
+metrics_test_cf_35 <- mmetric(test$y, pred_test_cf_35, metric = metric_list)
+metrics_test_cf_12 <- mmetric(test$y, pred_test_cf_12, metric = metric_list)
+metrics_test_cf_08 <- mmetric(test$y, pred_test_cf_08, metric = metric_list)
+metrics_test_cf_05 <- mmetric(test$y, pred_test_cf_05, metric = metric_list)
+metrics_test_cf_025 <- mmetric(test$y, pred_test_cf_025, metric = metric_list)
+metrics_test_cf_001 <- mmetric(test$y, pred_test_cf_001, metric = metric_list)
+```
+```{r evaluation-metrics-dataframe}
+evaluation_results <- data.frame(
+  dataset = c(
+    rep("Train", 7),
+    rep("Test", 7)
+  ),
+
+  model = rep(
+    c(
+      "model_cf_97",
+      "model_cf_35",
+      "model_cf_12",
+      "model_cf_08",
+      "model_cf_05",
+      "model_cf_025",
+      "model_cf_001"
+    ),
+    2
+  ),
+
+  CF = rep(
+    c(0.97, 0.35, 0.12, 0.08, 0.05, 0.025, 0.001),
+    2
+  ),
+
+  F1 = c(
+    metrics_train_cf_97["F1"],
+    metrics_train_cf_35["F1"],
+    metrics_train_cf_12["F1"],
+    metrics_train_cf_08["F1"],
+    metrics_train_cf_05["F1"],
+    metrics_train_cf_025["F1"],
+    metrics_train_cf_001["F1"],
+    metrics_test_cf_97["F1"],
+    metrics_test_cf_35["F1"],
+    metrics_test_cf_12["F1"],
+    metrics_test_cf_08["F1"],
+    metrics_test_cf_05["F1"],
+    metrics_test_cf_025["F1"],
+    metrics_test_cf_001["F1"]
+  ),
+
+  Accuracy = c(
+    metrics_train_cf_97["ACC"],
+    metrics_train_cf_35["ACC"],
+    metrics_train_cf_12["ACC"],
+    metrics_train_cf_08["ACC"],
+    metrics_train_cf_05["ACC"],
+    metrics_train_cf_025["ACC"],
+    metrics_train_cf_001["ACC"],
+    metrics_test_cf_97["ACC"],
+    metrics_test_cf_35["ACC"],
+    metrics_test_cf_12["ACC"],
+    metrics_test_cf_08["ACC"],
+    metrics_test_cf_05["ACC"],
+    metrics_test_cf_025["ACC"],
+    metrics_test_cf_001["ACC"]
+  ),
+
+  Precision = c(
+    metrics_train_cf_97["PRECISION"],
+    metrics_train_cf_35["PRECISION"],
+    metrics_train_cf_12["PRECISION"],
+    metrics_train_cf_08["PRECISION"],
+    metrics_train_cf_05["PRECISION"],
+    metrics_train_cf_025["PRECISION"],
+    metrics_train_cf_001["PRECISION"],
+    metrics_test_cf_97["PRECISION"],
+    metrics_test_cf_35["PRECISION"],
+    metrics_test_cf_12["PRECISION"],
+    metrics_test_cf_08["PRECISION"],
+    metrics_test_cf_05["PRECISION"],
+    metrics_test_cf_025["PRECISION"],
+    metrics_test_cf_001["PRECISION"]
+  ),
+
+  Recall = c(
+    metrics_train_cf_97["TPR"],
+    metrics_train_cf_35["TPR"],
+    metrics_train_cf_12["TPR"],
+    metrics_train_cf_08["TPR"],
+    metrics_train_cf_05["TPR"],
+    metrics_train_cf_025["TPR"],
+    metrics_train_cf_001["TPR"],
+    metrics_test_cf_97["TPR"],
+    metrics_test_cf_35["TPR"],
+    metrics_test_cf_12["TPR"],
+    metrics_test_cf_08["TPR"],
+    metrics_test_cf_05["TPR"],
+    metrics_test_cf_025["TPR"],
+    metrics_test_cf_001["TPR"]
+  )
+)
+
+evaluation_results
 ```
 
 ## Part 9 - Show the feature importance for each Model
-``` {r}
-
+```{r feature-importance}
+# Feature importance for each trained C5.0 decision tree
+importance_cf_97 <- C5imp(model_cf_97)
+importance_cf_35 <- C5imp(model_cf_35)
+importance_cf_12 <- C5imp(model_cf_12)
+importance_cf_08 <- C5imp(model_cf_08)
+importance_cf_05 <- C5imp(model_cf_05)
+importance_cf_025 <- C5imp(model_cf_025)
+importance_cf_001 <- C5imp(model_cf_001)
+importance_cf_97
+importance_cf_35
+importance_cf_12
+importance_cf_08
+importance_cf_05
+importance_cf_025
+importance_cf_001
 ```
 
 ## Part 10 (OPTIONAL) - Generate a Graph showing Train and Test Accuracy for each model
