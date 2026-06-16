@@ -1,0 +1,169 @@
+---
+title: "Decision Tree, Naïve Bayes & Cross-validation"
+author: "Jamison Orton"
+date: "2026-06-16"
+output: 
+  html_document: 
+    number_sections: true
+    toc: true
+editor_options: 
+  chunk_output_type: inline
+---
+
+# Task 1: Data and Decision Tree
+## Question 1: Setup and starting code
+### Part A - Set up, data import and inspection code
+```{r library}
+library(C50)
+library(caret)
+library(rminer)
+library(tictoc)
+library(tidyverse)
+```
+```{r setup-import}
+mydir <- getwd()
+setwd(mydir)
+
+cd <- read.csv(file = "CD_additional_balanced-1.csv", stringsAsFactors = TRUE)
+```
+```{r structure-summary}
+cd %>% str()
+
+cd %>% summary()
+```
+### Part B - Data preparation
+``` {r partition-data}
+set.seed(123)
+
+train_index <- createDataPartition(cd$y, p = 0.70, list = FALSE)
+
+train <- cd[train_index, ]
+test <- cd[-train_index, ]
+
+train %>% summary()
+test %>% summary()
+```
+### Part C - Target variable
+``` {r target-variable-distributions}
+cd %>% 
+  count(y) %>% 
+  mutate(percentage = round(n / sum(n) * 100, 2))
+
+train %>% 
+  count(y) %>% 
+  mutate(percentage = round(n / sum(n) * 100, 2))
+
+test %>% 
+  count(y) %>% 
+  mutate(percentage = round(n / sum(n) * 100, 2))
+```
+
+## Question 2: Simple Decision Tree Training and Testing
+
+### Part A - 
+``` {r train-base-model}
+# Train default C5.0 model
+c50_default <- C5.0(
+  y ~ .,
+  data = train
+)
+
+# Show model information
+c50_default
+
+# Show model summary
+summary(c50_default)
+```
+```{r default-c50-evaluation}
+# Predictions
+train_pred_c50_default <- predict(c50_default, train)
+test_pred_c50_default <- predict(c50_default, test)
+
+# Confusion matrices
+confusionMatrix(train_pred_c50_default, train$y)
+confusionMatrix(test_pred_c50_default, test$y)
+
+# Classification evaluation metrics
+mmetric(
+  y = train$y,
+  x = train_pred_c50_default,
+  metric = c("ACC", "PRECISION", "RECALL")
+)
+
+mmetric(
+  y = test$y,
+  x = test_pred_c50_default,
+  metric = c("ACC", "PRECISION", "RECALL")
+)
+```
+
+### Part B -
+``` {r train-smaller-cf}
+train_c50_model <- function(cf_value) {
+  C5.0(
+    y ~ .,
+    data = train,
+    control = C5.0Control(
+      CF = cf_value,
+      earlyStopping = FALSE,
+      noGlobalPruning = FALSE
+    )
+  )
+}
+
+model_cf_001 <- train_c50_model(0.001)
+```
+```{r plot-smaller-model}
+plot(model_cf_001)
+```
+```{r c50-reduced-evaluation}
+# Generate predictions for training and testing sets
+train_pred_cf_001 <- predict(model_cf_001, train)
+test_pred_cf_001 <- predict(model_cf_001, test)
+
+# Confusion matrices
+confusionMatrix(train_pred_cf_001, train$y)
+confusionMatrix(test_pred_cf_001, test$y)
+
+# Classification evaluation metrics
+mmetric(
+  y = train$y,
+  x = train_pred_cf_001,
+  metric = c("ACC", "PRECISION", "RECALL")
+)
+
+mmetric(
+  y = test$y,
+  x = test_pred_cf_001,
+  metric = c("ACC", "PRECISION", "RECALL")
+)
+```
+
+## Question 3: Simple Naïve Bayes Model Training and Testing
+
+### Part A -
+
+
+### Part B - 
+
+
+## Question 4: Create a Named Cross-validation Function – cv_function
+
+### Part A - 
+
+
+### Part B -
+
+
+### Part C - 
+
+
+### Part D - 
+
+
+## Question 5: 5-fold and 10-fold C5.0 and naive Bayes evaluation performance with cv_function
+
+### Part A -
+
+
+# Task 2: Reflections

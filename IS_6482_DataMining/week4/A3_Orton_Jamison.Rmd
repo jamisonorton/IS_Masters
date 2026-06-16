@@ -80,7 +80,6 @@ model_cf_08 <- train_c50_model(0.08)
 model_cf_05 <- train_c50_model(0.05)
 model_cf_025 <- train_c50_model(0.025)
 model_cf_001 <- train_c50_model(0.001)
-
 ```
 
 ## Part 5 - Model Information
@@ -117,13 +116,20 @@ Tree complexity is based on tree size. Tree size represents the number of termin
 
 ### Part C
 ```{r plot-least-complex-tree, fig.height=8, fig.width=20}
+least_complex_model_name <- tree_sizes %>%
+  arrange(tree_size) %>%
+  slice(1) %>%
+  pull(model)
+least_complex_model <- get(least_complex_model_name)
+
+least_complex_model_name
 plot(least_complex_model)
 ```
 ### Part D
 ``` {r show least_complex_model and then explain steps}
 least_complex_model
 ```
-The least complex tree begins by checking the value of nr.employed if it is <= 5076.2 then it will go to duration. In the instance of nr.employed = 6000 and duration = 500 the model predicts yes as it is yes 80% of the time.
+For the instance with nr.employed = 6000 and duration = 500, I used the least complex decision tree to follow the model's decision rules. The least complex tree begins by checking the value of nr.employed if it is <= 5076.2 then it will go to duration. In the instance of nr.employed = 6000 and duration = 500 the model predicts yes as it is yes 80% of the time.
 
 ## Part 6 - Predict on the Train and Test sets with each trained model
 ``` {r generate-train-test-predictions}
@@ -328,3 +334,12 @@ importance_cf_001
 ```
 
 # Task 2: Reflections
+Changing the CF hyperparameter affected the complexity of the decision tree models. In general, higher CF values allowed for more splits, creating larger and more complex trees. Lower CF values increased pruning creating smaller trees. In my results, the most complex model was the model with a CF of .97 creating 339 leaf nodes. The least complex was the model with a CF of .001 creating 13 leaf nodes. I defined complexity using the number of leaf nodes because each leaf node represents a final decision rule. Higher leaf nodes are harder to interpret, while a model with fewer nodes is easier to explain.
+
+The best performing model on the training set was the model with CF of .97. This model had 339 leaf nodes and achieved a training accuracy of 94.38%. The best-performing model on the testing set was the model with CF of .12. The model had 59 leaf nodes and achieved a test accuracy of 88.5%.
+
+Overall the relationship between complexity and performance showed that more complex trees tended to perform better on the training data but they did not always perform better on the testing data. This suggest that some of the larger trees may have overfit the training data. 
+
+If I were presenting these results in a meeting, I would choose the model with CF of .05. While it does not have the highest training accuracy, it performs well on the testing set and has a manageable number of leaf nodes. This makes it easier to explain how the model makes predections.
+
+The relationship between complexity and runtime is that more complex trees generally require more time to generate because the algorithm evaluates more possible splits. High runtime can be a problem for larger datasets because it slows model development and increases computing costs.
