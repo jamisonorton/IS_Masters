@@ -14,6 +14,10 @@ editor_options:
 ## Question 1: Setup and starting code
 ### Part A - Set up, data import and inspection code
 ```{r library}
+library(psych)
+library(e1071)
+library(matrixStats)
+library(knitr)
 library(C50)
 library(caret)
 library(rminer)
@@ -24,7 +28,7 @@ library(tidyverse)
 mydir <- getwd()
 setwd(mydir)
 
-cd <- read.csv(file = "CD_additional_balanced-1.csv", stringsAsFactors = TRUE)
+cd <- read.csv(file = "CD_additional_modified.csv", stringsAsFactors = TRUE)
 ```
 ```{r structure-summary}
 cd %>% str()
