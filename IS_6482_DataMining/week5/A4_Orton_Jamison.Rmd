@@ -64,7 +64,7 @@ test %>%
 
 ## Question 2: Simple Decision Tree Training and Testing
 
-### Part A - 
+### Part A - Simple Decision Tree model
 ``` {r train-base-model}
 # Train default C5.0 model
 c50_default <- C5.0(
@@ -101,7 +101,7 @@ mmetric(
 )
 ```
 
-### Part B -
+### Part B - Smaller cf for the same model
 ``` {r train-smaller-cf}
 train_c50_model <- function(cf_value) {
   C5.0(
@@ -145,29 +145,188 @@ mmetric(
 
 ## Question 3: Simple Naïve Bayes Model Training and Testing
 
-### Part A -
+### Part A - Naive Bayes Model
+```{r naive-bayes-model}
+# Train naive Bayes model using the original training set
+nb_default <- naiveBayes(
+  y ~ .,
+  data = train
+)
 
+# Show model information
+nb_default
+```
 
-### Part B - 
+```{r naive-bayes-evaluation}
+# Generate predictions for training and testing sets
+train_pred_nb_default <- predict(nb_default, train)
+test_pred_nb_default <- predict(nb_default, test)
 
+# Confusion matrices
+confusionMatrix(train_pred_nb_default, train$y, positive = "yes")
+confusionMatrix(test_pred_nb_default, test$y, positive = "yes")
+
+# Classification evaluation metrics
+mmetric(
+  y = train$y,
+  x = train_pred_nb_default,
+  metric = c("ACC", "PRECISION", "RECALL")
+)
+mmetric(
+  y = test$y,
+  x = test_pred_nb_default,
+  metric = c("ACC", "PRECISION", "RECALL")
+)
+```
+
+### Part B - Removed Duration
+```{r naive-bayes-remove-duration}
+train_nb_reduced <- train %>% 
+  select(-duration)
+test_nb_reduced <- test %>% 
+  select(-duration)
+
+# Train naive Bayes model using the reduced training set
+nb_reduced <- naiveBayes(
+  y ~ .,
+  data = train_nb_reduced
+)
+
+# Show model information
+nb_reduced
+```
+```{r naive-bayes-reduced-evaluation}
+# Generate predictions for training and testing sets
+train_pred_nb_reduced <- predict(nb_reduced, train_nb_reduced)
+test_pred_nb_reduced <- predict(nb_reduced, test_nb_reduced)
+
+# Confusion matrices
+confusionMatrix(train_pred_nb_reduced, train_nb_reduced$y, positive = "yes")
+confusionMatrix(test_pred_nb_reduced, test_nb_reduced$y, positive = "yes")
+
+# Classification evaluation metrics
+mmetric(
+  y = train_nb_reduced$y,
+  x = train_pred_nb_reduced,
+  metric = c("ACC", "PRECISION", "RECALL")
+)
+
+mmetric(
+  y = test_nb_reduced$y,
+  x = test_pred_nb_reduced,
+  metric = c("ACC", "PRECISION", "RECALL")
+)
+```
 
 ## Question 4: Create a Named Cross-validation Function – cv_function
 
-### Part A - 
-
-
-### Part B -
-
-
-### Part C - 
-
-
-### Part D - 
-
+### Part A - Define cv_function 
+```{r define-cv-function}
+cv_function <- function(df, target, nFolds, seedVal, classification, metrics_list)
+{
+  set.seed(seedVal)
+  
+  folds <- createFolds(df[, target], nFolds) 
+  
+  cv_results <- lapply(folds, function(x)
+  { 
+    train <- df[-x, names(df) != target]
+    test  <- df[x, names(df) != target]
+    
+    train_target <- df[-x, target]
+    test_target  <- df[x, target]
+    
+    classification_model <- classification(train, train_target) 
+    
+    pred <- predict(classification_model, test)
+    
+    return(mmetric(test_target, pred, metrics_list))
+  })
+  
+  cv_results_m <- as.matrix(as.data.frame(cv_results))
+  
+  cv_mean <- as.matrix(rowMeans(cv_results_m))
+  colnames(cv_mean) <- "Mean"
+  
+  cv_sd <- as.matrix(rowSds(cv_results_m))
+  colnames(cv_sd) <- "Sd"
+  
+  cv_all <- cbind(cv_results_m, cv_mean, cv_sd)
+  
+  kable(cv_all, digits = 2)
+}
+```
 
 ## Question 5: 5-fold and 10-fold C5.0 and naive Bayes evaluation performance with cv_function
 
-### Part A -
+### Part A - 5-fold and 10-fold C5.0 and Naive Bayes Evaluation
+```{r classification-functions}
+# C5.0 classification function
+c50_classification <- function(train, train_target)
+{
+  C5.0(
+    x = train,
+    y = train_target
+  )
+}
 
+# Naive Bayes classification function
+nb_classification <- function(train, train_target)
+{
+  naiveBayes(
+    x = train,
+    y = train_target
+  )
+}
+```
+```{r cv-c50-5fold}
+cv_function(
+  df = cd,
+  target = "y",
+  nFolds = 5,
+  seedVal = 123,
+  classification = c50_classification,
+  metrics_list = c("ACC", "PRECISION", "TPR", "F1")
+)
+```
+```{r cv-c50-10fold}
+cv_function(
+  df = cd,
+  target = "y",
+  nFolds = 10,
+  seedVal = 123,
+  classification = c50_classification,
+  metrics_list = c("ACC", "PRECISION", "TPR", "F1")
+)
+```
+```{r cv-nb-5fold}
+cv_function(
+  df = cd,
+  target = "y",
+  nFolds = 5,
+  seedVal = 123,
+  classification = nb_classification,
+  metrics_list = c("ACC", "PRECISION", "TPR", "F1")
+)
+```
+```{r cv-nb-10fold}
+cv_function(
+  df = cd,
+  target = "y",
+  nFolds = 10,
+  seedVal = 123,
+  classification = nb_classification,
+  metrics_list = c("ACC", "PRECISION", "TPR", "F1")
+)
+```
 
 # Task 2: Reflections
+After building the C5.0 decision tree, reduced-complexity C5.0 tree, naïve Bayes model, reduced-predictor naïve Bayes model, and cross-validation models, I learned that the “best” model depends on which performance goal matters most. The default C5.0 model had strong overall accuracy. On the test set, it reached about 90.28% accuracy, and the cross-validation results were similar, with about 90.12% mean accuracy for 5-fold CV and 90.63% mean accuracy for 10-fold CV. This suggests that the C5.0 model was fairly stable and performed well overall. However, the target variable is imbalanced, with many more "no" cases than "yes" cases, so accuracy alone does not tell the whole story. The default C5.0 model was good at predicting the majority "no" class, but its recall/TPR for the "yes" class was only about 50%.
+
+When I lowered the CF value for the C5.0 model, the tree became less complex and more conservative. The reduced CF model had similar test accuracy, about 90.36%, and higher precision for the "yes" class, about 73.53%. However, this came at a major cost: the model only found about 18.52% of the actual "yes" cases. I would explain to a supervisor that this reduced tree is useful if we only want to contact customers when the model is very confident, but it would miss many potential positive responses.
+
+The naïve Bayes model had lower overall accuracy than C5.0, about 87.29% on the test set, but it performed better at identifying the "yes" class. Its "yes" recall/TPR was about 65.19% on the test set, and the cross-validation results were consistent, with "yes" TPR around 61.86% for 5-fold CV and 62.09% for 10-fold CV. This means naïve Bayes may be preferred when the goal is to identify more potential positive customers, even if that means accepting more false positives. For example, if a marketing team can afford to follow up with extra customers, naïve Bayes may be more useful than C5.0 because it catches more of the actual "yes" cases.
+
+I removed duration from the naïve Bayes model because it is often a very strong predictor in marketing-call data, but it may not be known until after the call has already happened. I expected that removing it might make the model more realistic, but the results got worse. Test accuracy dropped from about 87.29% to 83.56%, "yes" precision dropped from about 44.44% to 33.50%, and "yes" TPR dropped from about 65.19% to 51.11%. This shows that duration was providing important predictive information. Even though removing it may make sense from a business-timing perspective, it weakened the model’s ability to predict positive responses.
+
+The cross-validation results were similar to the train/test split results, which gives me more confidence in the model comparisons. The C5.0 model consistently had higher accuracy, while naïve Bayes consistently had better recall for the "yes" class. I think cross-validation is the better evaluation method because it tests the model across multiple folds instead of relying on one random 70/30 split. The train/test split is easier to understand, but cross-validation gives a more reliable estimate of average performance and model stability. Overall, I would tell a supervisor that C5.0 is better for overall accuracy, while naïve Bayes is better if the business priority is finding more positive responders.
