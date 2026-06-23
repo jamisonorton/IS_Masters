@@ -9,3 +9,65 @@ output:
 editor_options: 
   chunk_output_type: inline
 ---
+# Task 1: Data and Regression Model
+## Question 1: Setup and starting code
+### Part A - Set up, data import and inspection code
+```{r library}
+library(psych)
+library(rpart)
+library(RWeka)
+library(caret)
+library(rminer)
+library(matrixStats)
+library(knitr)
+library(tidyverse)
+```
+```{r setup-import}
+mydir <- getwd()
+setwd(mydir)
+
+vgsales <- read.csv(file = "NA_sales_filtered.csv", stringsAsFactors = FALSE, fileEncoding = "latin1")
+
+vgsales %>% str()
+
+vgsales <- vgsales %>% 
+  mutate(across(where(is.character) & !Name, as.factor))
+
+vgsales %>% summary()
+```
+
+### Part B - Pairs panel distribution and correlation
+``` {r pairs-panel}
+
+```
+
+### Part C - Remove Name Variable, Regression model summary
+``` {r regression-model}
+
+```
+
+### Part D - Simple hold-out evaluation
+``` {r hold-out}
+set.seed(123)
+
+vg_index <- createDataPartition(cd$y, p = 0.70, list = FALSE)
+
+train <- cd[train_index, ]
+test <- cd[-train_index, ]
+
+train %>% summary()
+test %>% summary()
+```
+
+### Part E - Structure and summaries
+``` {r summaries}
+
+```
+
+## Question 2: lm, rpart and M5P model training and testing
+
+## Question 3: Cross-validation of lm, rpart, and M5P NA_Sales prediction models
+
+## Question 4: Improve the models by adding a quadratic term of Critic_Score
+
+## Question 5: Improve the models with the log term of User_Count
