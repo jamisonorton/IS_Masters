@@ -31,43 +31,493 @@ vgsales <- read.csv(file = "NA_sales_filtered.csv", stringsAsFactors = FALSE, fi
 vgsales %>% str()
 
 vgsales <- vgsales %>% 
-  mutate(across(where(is.character) & !Name, as.factor))
+  mutate(across(where(is.character) & !all_of("Name"), as.factor))
 
 vgsales %>% summary()
 ```
 
 ### Part B - Pairs panel distribution and correlation
 ``` {r pairs-panel}
+# Select only numeric variables
+vgsales_numeric <- vgsales %>% 
+  select(where(is.numeric))
 
+# Inspect the numeric variables included
+str(vgsales_numeric)
+
+# Show distributions and correlations
+pairs.panels(
+  vgsales_numeric,
+  method = "pearson",
+  hist.col = "lightgray",
+  density = TRUE,
+  ellipses = TRUE,
+  stars = TRUE
+)
 ```
 
 ### Part C - Remove Name Variable, Regression model summary
 ``` {r regression-model}
+# Remove the Name variable from the data frame
+vgsales_model <- vgsales %>% 
+  select(-Name)
 
+vgsales_base <- vgsales_model
+
+# Check that Name has been removed
+str(vgsales_model)
+
+# Build a linear regression model using NA_Sales as the target variable
+lm_model <- lm(NA_Sales ~ ., data = vgsales_model)
+
+# Show model summary: coefficients, significance, R-squared, adjusted R-squared, etc.
+summary(lm_model)
 ```
 
 ### Part D - Simple hold-out evaluation
 ``` {r hold-out}
 set.seed(123)
 
-vg_index <- createDataPartition(cd$y, p = 0.70, list = FALSE)
+# Create a 70/30 training/testing split based on the target variable
+train_index <- createDataPartition(
+  vgsales_model$NA_Sales, 
+  p = 0.70, 
+  list = FALSE
+)
 
-train <- cd[train_index, ]
-test <- cd[-train_index, ]
-
-train %>% summary()
-test %>% summary()
+# Partition the data
+train <- vgsales_model[train_index, ]
+test <- vgsales_model[-train_index, ]
 ```
 
 ### Part E - Structure and summaries
 ``` {r summaries}
+# Overall structure of the training set
+train %>% str()
 
+# Summary of the training set
+train %>% summary()
+
+# Overall structure of the testing set
+test %>% str()
+
+# Summary of the testing set
+test %>% summary()
 ```
 
 ## Question 2: lm, rpart and M5P model training and testing
+### Part A - Train 3 models using lm, rpart, and M5P on the training set
+```{r model-training, warning=FALSE, message=FALSE}
+# Linear regression model
+lm_train_model <- lm(NA_Sales ~ ., data = train)
+
+# Regression tree model
+rpart_train_model <- rpart(NA_Sales ~ ., data = train)
+
+# M5P model tree
+m5p_train_model <- M5P(NA_Sales ~ ., data = train)
+```
+
+### Part B - Apply the model and generate the model-fit (R2) and prediction error metrics
+``` {r generate-model-fit}
+# -----------------------------
+# Generate predictions
+# -----------------------------
+
+# lm predictions
+lm_train_pred <- predict(lm_train_model, newdata = train)
+lm_test_pred  <- predict(lm_train_model, newdata = test)
+
+# rpart predictions
+rpart_train_pred <- predict(rpart_train_model, newdata = train)
+rpart_test_pred  <- predict(rpart_train_model, newdata = test)
+
+# M5P predictions
+m5p_train_pred <- predict(m5p_train_model, newdata = train)
+m5p_test_pred  <- predict(m5p_train_model, newdata = test)
+
+# -----------------------------
+# Function to calculate metrics
+# -----------------------------
+get_metrics <- function(actual, predicted) {
+  # Keep only complete cases
+  good_rows <- complete.cases(actual, predicted)
+  actual <- actual[good_rows]
+  predicted <- predicted[good_rows]
+
+  error <- actual - predicted
+
+  # Avoid division by zero for percentage errors
+  nonzero <- actual != 0
+
+  R2 <- cor(actual, predicted)^2
+
+  MAE <- mean(abs(error))
+
+  MAPE <- mean(abs(error[nonzero] / actual[nonzero])) * 100
+
+  RAE <- sum(abs(error)) / sum(abs(actual - mean(actual))) * 100
+
+  RMSE <- sqrt(mean(error^2))
+
+  RMSPE <- sqrt(mean((error[nonzero] / actual[nonzero])^2)) * 100
+
+  RRSE <- sqrt(sum(error^2) / sum((actual - mean(actual))^2)) * 100
+
+  data.frame(
+    R2 = R2,
+    MAE = MAE,
+    MAPE = MAPE,
+    RAE = RAE,
+    RMSE = RMSE,
+    RMSPE = RMSPE,
+    RRSE = RRSE
+  )
+}
+
+# -----------------------------
+# Calculate metrics
+# -----------------------------
+lm_train_metrics <- get_metrics(train$NA_Sales, lm_train_pred)
+lm_test_metrics  <- get_metrics(test$NA_Sales, lm_test_pred)
+rpart_train_metrics <- get_metrics(train$NA_Sales, rpart_train_pred)
+rpart_test_metrics  <- get_metrics(test$NA_Sales, rpart_test_pred)
+m5p_train_metrics <- get_metrics(train$NA_Sales, m5p_train_pred)
+m5p_test_metrics  <- get_metrics(test$NA_Sales, m5p_test_pred)
+
+# -----------------------------
+# Combine results into one table
+# -----------------------------
+model_metrics <- bind_rows(
+  cbind(Model = "lm", Dataset = "Training", lm_train_metrics),
+  cbind(Model = "lm", Dataset = "Testing", lm_test_metrics),
+  cbind(Model = "rpart", Dataset = "Training", rpart_train_metrics),
+  cbind(Model = "rpart", Dataset = "Testing", rpart_test_metrics),
+  cbind(Model = "M5P", Dataset = "Training", m5p_train_metrics),
+  cbind(Model = "M5P", Dataset = "Testing", m5p_test_metrics)
+)
+
+# Display the results
+kable(model_metrics, digits = 4)
+```
 
 ## Question 3: Cross-validation of lm, rpart, and M5P NA_Sales prediction models
+### Part A - Cross-validation function
+```{r cross-validation-function}
+# Named function for cross-validation of numeric prediction models
+cv_numeric_model <- function(data, target, model_method, k = 10, seed = 123) {
+  
+  set.seed(seed)
+  
+  # Create k folds based on the target variable
+  folds <- createFolds(data[[target]], k = k, list = TRUE, returnTrain = FALSE)
+  
+  # Function to calculate model-fit and error metrics
+  get_metrics <- function(actual, predicted) {
+    
+    good_rows <- complete.cases(actual, predicted)
+    actual <- actual[good_rows]
+    predicted <- predicted[good_rows]
+    
+    error <- actual - predicted
+    
+    nonzero <- actual != 0
+    
+    R2 <- cor(actual, predicted)^2
+    
+    MAE <- mean(abs(error))
+    
+    MAPE <- mean(abs(error[nonzero] / actual[nonzero])) * 100
+    
+    RAE <- sum(abs(error)) / sum(abs(actual - mean(actual))) * 100
+    
+    RMSE <- sqrt(mean(error^2))
+    
+    RMSPE <- sqrt(mean((error[nonzero] / actual[nonzero])^2)) * 100
+    
+    RRSE <- sqrt(sum(error^2) / sum((actual - mean(actual))^2)) * 100
+    
+    data.frame(
+      R2 = R2,
+      MAE = MAE,
+      MAPE = MAPE,
+      RAE = RAE,
+      RMSE = RMSE,
+      RMSPE = RMSPE,
+      RRSE = RRSE
+    )
+  }
+  
+  # Store results for each fold
+  fold_results <- data.frame()
+  
+  for (i in seq_along(folds)) {
+    
+    test_index <- folds[[i]]
+    
+    cv_train <- data[-test_index, ]
+    cv_test <- data[test_index, ]
+    
+    formula_text <- paste(target, "~ .")
+    model_formula <- as.formula(formula_text)
+    
+    # Train the selected model using default settings
+    if (model_method == "lm") {
+      model <- lm(model_formula, data = cv_train)
+    } else if (model_method == "rpart") {
+      model <- rpart(model_formula, data = cv_train)
+    } else if (model_method == "M5P") {
+      model <- M5P(model_formula, data = cv_train)
+    } else {
+      stop("model_method must be 'lm', 'rpart', or 'M5P'")
+    }
+    
+    # Predict on the validation fold
+    predicted <- predict(model, newdata = cv_test)
+    
+    # Calculate fold metrics
+    fold_metrics <- get_metrics(cv_test[[target]], predicted)
+    
+    fold_results <- bind_rows(
+      fold_results,
+      cbind(
+        Model = model_method,
+        Fold = i,
+        fold_metrics
+      )
+    )
+  }
+  
+# Calculate means across folds
+metric_means <- fold_results %>%
+  summarise(
+    across(
+      c(R2, MAE, MAPE, RAE, RMSE, RMSPE, RRSE),
+      \(x) mean(x, na.rm = TRUE)
+    )
+  ) %>%
+  mutate(Model = model_method, Fold = "Mean") %>%
+  select(Model, Fold, everything())
+
+# Calculate standard deviations across folds
+metric_sds <- fold_results %>%
+  summarise(
+    across(
+      c(R2, MAE, MAPE, RAE, RMSE, RMSPE, RRSE),
+      \(x) sd(x, na.rm = TRUE)
+    )
+  ) %>%
+  mutate(Model = model_method, Fold = "SD") %>%
+  select(Model, Fold, everything())
+
+# Convert Fold to character before binding with Mean and SD rows
+fold_results <- fold_results %>%
+  mutate(Fold = as.character(Fold))
+
+# Combine fold results, means, and standard deviations
+cv_results <- bind_rows(
+  fold_results,
+  metric_means,
+  metric_sds
+)
+  
+  return(cv_results)
+}
+```
+
+### Part B - 5-fold cross-validation results
+```{r five-fold-cross-validation}
+# Generate 5-fold cross-validation results for each model
+lm_cv_results <- cv_numeric_model(
+  data = vgsales_model,
+  target = "NA_Sales",
+  model_method = "lm",
+  k = 5,
+  seed = 123
+)
+
+rpart_cv_results <- cv_numeric_model(
+  data = vgsales_model,
+  target = "NA_Sales",
+  model_method = "rpart",
+  k = 5,
+  seed = 123
+)
+
+m5p_cv_results <- cv_numeric_model(
+  data = vgsales_model,
+  target = "NA_Sales",
+  model_method = "M5P",
+  k = 5,
+  seed = 123
+)
+
+# Combine all cross-validation results into one table
+all_cv_results <- bind_rows(
+  lm_cv_results,
+  rpart_cv_results,
+  m5p_cv_results
+)
+
+# Display results
+kable(all_cv_results, digits = 4)
+```
 
 ## Question 4: Improve the models by adding a quadratic term of Critic_Score
+### Part A - Quadratic term addition to the predictors
+```{r critic-score-squared}
+# Add the quadratic term of Critic_Score to the whole modeling data set
+vgsales_quad <- vgsales_base %>%
+  mutate(Critic_Score_Squared = Critic_Score^2)
+
+# Inspect the updated data frame
+str(vgsales_quad)
+
+# Confirm the new variable was created
+summary(vgsales_quad$Critic_Score_Squared)
+```
+
+
+### Part B - lm model with Critic_Score_Squared
+```{r lm-critic-score-squared}
+# Build lm model using the whole data set with Critic_Score_Squared included
+lm_quad_model <- lm(NA_Sales ~ ., data = vgsales_quad)
+
+# Show model summary
+summary(lm_quad_model)
+```
+
+### Part C - 5-fold cross-validation with Critic_Score_Squared
+```{r five-fold-cross-validation-quad}
+lm_quad_cv_results <- cv_numeric_model(
+  data = vgsales_quad,
+  target = "NA_Sales",
+  model_method = "lm",
+  k = 5,
+  seed = 123
+)
+
+rpart_quad_cv_results <- cv_numeric_model(
+  data = vgsales_quad,
+  target = "NA_Sales",
+  model_method = "rpart",
+  k = 5,
+  seed = 123
+)
+
+m5p_quad_cv_results <- cv_numeric_model(
+  data = vgsales_quad,
+  target = "NA_Sales",
+  model_method = "M5P",
+  k = 5,
+  seed = 123
+)
+
+all_quad_cv_results <- bind_rows(
+  lm_quad_cv_results,
+  rpart_quad_cv_results,
+  m5p_quad_cv_results
+)
+
+kable(all_quad_cv_results, digits = 4)
+```
 
 ## Question 5: Improve the models with the log term of User_Count
+### Part A - Improve models with log term of User_Count
+```{r log-user-count}
+# Check whether User_Count has zeros
+sum(vgsales_base$User_Count == 0, na.rm = TRUE)
+
+# Create a new data frame excluding User_Count and adding log_User_Count
+vgsales_log_user_count <- vgsales_base %>%
+  select(-User_Count) %>%
+  mutate(log_User_Count = log(vgsales_base$User_Count))
+
+str(vgsales_log_user_count)
+summary(vgsales_log_user_count$log_User_Count)
+```
+
+### Part B - lm model with log_User_Count
+```{r lm-log-user-count}
+# The data frame vgsales_log_user_count was already created in Part A.
+# It excludes User_Count, includes log_User_Count, and does not include quadratic terms.
+# Inspect the updated data frame
+str(vgsales_log_user_count)
+
+# Build lm model using the whole data set
+lm_log_model <- lm(NA_Sales ~ ., data = vgsales_log_user_count)
+
+# Show model summary
+summary(lm_log_model)
+```
+
+### Part C - 5-fold cross-validation with log_User_Count
+```{r five-fold-cross-validation-log-user-count}
+# Generate 5-fold cross-validation results for each model
+# using the data set with log_User_Count included and User_Count excluded
+
+lm_log_cv_results <- cv_numeric_model(
+  data = vgsales_log_user_count,
+  target = "NA_Sales",
+  model_method = "lm",
+  k = 5,
+  seed = 123
+)
+
+rpart_log_cv_results <- cv_numeric_model(
+  data = vgsales_log_user_count,
+  target = "NA_Sales",
+  model_method = "rpart",
+  k = 5,
+  seed = 123
+)
+
+m5p_log_cv_results <- cv_numeric_model(
+  data = vgsales_log_user_count,
+  target = "NA_Sales",
+  model_method = "M5P",
+  k = 5,
+  seed = 123
+)
+
+# Combine all cross-validation results into one table
+all_log_cv_results <- bind_rows(
+  lm_log_cv_results,
+  rpart_log_cv_results,
+  m5p_log_cv_results
+)
+
+# Display results
+kable(all_log_cv_results, digits = 4)
+```
+
+# Task 2: Reflections
+## 1. Predictor recommended for removal for parsimony
+
+To make the models more parsimonious, I would recommend considering removal of User_Score before removing the other numeric predictors. In the linear regression summary, User_Score was statistically significant, but its coefficient was relatively small compared with the practical impact of variables such as Critic_Score, Critic_Count, and User_Count. The coefficient for User_Score was negative, approximately -0.0028, which is also somewhat difficult to interpret because higher user scores would generally be expected to have a positive relationship with sales. This suggests that once other predictors are included, especially Critic_Score, Critic_Count, and User_Count, User_Score may not be adding as much unique explanatory value.
+
+From the data exploration, Critic_Score and User_Score are likely related because both measure game reception or quality. If two predictors contain overlapping information, keeping both may make the model less parsimonious without greatly improving performance. I would compare model performance with and without User_Score; if the RMSE, MAE, and R-squared change very little, then removing User_Score would be reasonable. Based on parsimony, I would rather keep stronger and more interpretable predictors such as Critic_Score, Critic_Count, and User_Count or log_User_Count.
+
+## 2. Why log_User_Count could be more effective than User_Count
+
+The log of User_Count could be more effective than the original User_Count because the original variable is highly skewed. In the data summary, User_Count ranged from a minimum of 4 to a maximum of 10,665, while the median was only 24 and the mean was about 152.7. This large difference between the mean and median shows that a relatively small number of games have extremely high user counts. Those extreme values can have too much influence on linear regression and can make the relationship between user activity and sales look more linear than it really is.
+
+Using log_User_Count compresses the large values while preserving the order of the observations. This often helps when the effect of a predictor has diminishing returns. For example, the difference between 10 and 100 user ratings may be more meaningful than the difference between 5,010 and 5,100 user ratings. In other words, sales may increase as user attention increases, but not at a constant linear rate.
+
+The empirical evidence should come from comparing the model fit and prediction error metrics. If the log model has a higher or similar R-squared and lower MAE, RMSE, RAE, and RRSE than the original model, that would support using log_User_Count. In my results, the log-transformed model had [insert comparison, for example: lower testing RMSE than the original model] and [insert comparison, for example: similar or better R2]. This suggests that the log transformation helped the model generalize better by reducing the effect of extreme user-count values.
+
+## 3. Whether to add a quadratic term of User_Count
+
+I would not automatically recommend adding a quadratic term of User_Count to the model. A quadratic term is useful when there is evidence of a curved relationship, but User_Count is extremely right-skewed. Because of this skewness, a squared version of User_Count could make the influence of very large observations even stronger. Since the maximum User_Count is 10,665 while the median is only 24, squaring this variable would create extremely large values for a small number of observations. That could make the model more sensitive to outliers and less stable.
+
+A log transformation is probably more appropriate than a quadratic transformation for this variable. The log transformation handles skewness and represents diminishing returns, while a squared term may exaggerate the effect of the largest games. I would only add User_Count_Squared if model performance clearly improved in cross-validation. Specifically, I would want to see lower testing or cross-validation RMSE, MAE, RRSE, and RAE without a large drop in interpretability. If the model with User_Count_Squared does not outperform the log model, then it is not worth adding because it makes the model less parsimonious.
+
+Therefore, based on the data exploration and the skewness of User_Count, I would recommend using log_User_Count rather than adding User_Count_Squared.
+
+## 4. What I learned from the models and adjustments
+
+The three models showed different strengths and weaknesses. The linear regression model was the most interpretable because it showed the direction, size, and statistical significance of each predictor. From the linear regression summary, Critic_Score, Critic_Count, and User_Count were important predictors of NA_Sales, while several platform, genre, and rating categories also had meaningful effects. However, the original linear model had a Multiple R-squared of about 0.2787, which means it explained only about 28% of the variation in North American sales. This tells me that sales are influenced by many other factors not included in the dataset, such as marketing, release timing, franchise popularity, and distribution.
+
+The rpart model was useful because it allowed for non-linear splits and interactions without requiring me to manually specify them. However, decision trees can be less accurate if the default tree is too simple or if it does not capture enough detail in the data. The M5P model was also useful because it combines tree-based structure with linear models at the leaves, which can capture both segmentation and linear relationships.
+
+Adding the quadratic term for Critic_Score tested whether critic ratings had a curved relationship with sales. If the squared term was significant and improved CV metrics, then it would suggest that the effect of critic score is not purely linear. However, if the improvement was small, then the added complexity may not be worthwhile. The log transformation of User_Count was especially meaningful because User_Count was highly skewed. Transforming it made the model less dominated by extreme values and may have improved prediction error. If I were explaining this to a supervisor, I would say that the models provide useful but limited predictive insight. The best model should be chosen not only by fit, but also by whether it generalizes well and remains understandable. I would recommend comparing cross-validation RMSE and MAE across models and choosing the simplest model that performs nearly as well as the best-performing model.
