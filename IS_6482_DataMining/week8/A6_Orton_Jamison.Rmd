@@ -2,29 +2,273 @@
 title: 'A6: Blackbox Methods, KNN for Numeric Prediction tasks'
 author: "Jamison Orton"
 date: "2026-07-07"
-output: html_document
+output: 
+  html_document:
+    number_sections: yes
+    toc: yes
+    fig_width: 15
+    fig_height: 10
+editor_options: 
+  chunk_output_type: inline
 ---
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+# Code Chunk 1: Package load, data import, inspection and partitioning.
+## Part A: Load required packages.
+```{r library}
+library(caret)
+library(RWeka)
+library(kernlab)
+library(rminer)
+library(matrixStats)
+library(knitr)
+library(tidyverse)
+```
+## Part B: Import NA_sales and partition dataset to the training and testing sets.
+```{r import-partition}
+mydir <- getwd()
+setwd(mydir)
+
+nasales <- read.csv(file = "NA_sales_filtered.csv", stringsAsFactors = FALSE, fileEncoding = "latin1")
+
+# Remove the Name variable from the data frame
+nasales_model <- nasales %>% 
+  select(-Name)
+
+nasales_model <- nasales_model %>% 
+  mutate(across(where(is.character), as.factor))
+
+df <- nasales_model
+target <- "NA_Sales"
+seedVal <- 500
+metrics_list <- c("MAE","RMSE","MAPE","RMSPE","RAE","RRSE","R2")
+
+# Create a 70/30 training/testing split based on the target variable
+set.seed(seedVal)
+
+train_index <- createDataPartition(
+  nasales_model$NA_Sales, 
+  p = 0.70, 
+  list = FALSE
+)
+
+# Partition the data
+train <- nasales_model[train_index, ]
+test <- nasales_model[-train_index, ]
 ```
 
-## R Markdown
+# Code Chunk 2: Build and evaluate neural network models for numeric prediction tasks.
+## Part A: Build and evaluate MLP models for numeric prediction with the video games sales data.
+### Part 1: Build an MLP model on MultilayerPerceptron()’s default setting on the training set. Evaluate the model performance on the training set and testing set.
+```{r mlp}
+# Designate a shortened name MLP for the MultilayerPerceptron ANN method in RWeka
+MLP <- make_Weka_classifier("weka/classifiers/functions/MultilayerPerceptron")
 
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+# Build MLP model on the training set using default settings
+mlp_default <- MLP(NA_Sales ~ ., data = train)
 
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+# Make predictions on the training set
+train_pred_default <- predict(mlp_default, newdata = train)
 
-```{r cars}
-summary(cars)
+# Make predictions on the testing set
+test_pred_default <- predict(mlp_default, newdata = test)
+
+# Evaluate training set performance
+train_performance_default <- mmetric(
+  y = train$NA_Sales,
+  x = train_pred_default,
+  metric = metrics_list
+)
+
+# Evaluate testing set performance
+test_performance_default <- mmetric(
+  y = test$NA_Sales,
+  x = test_pred_default,
+  metric = metrics_list
+)
+
+# Combine performance results
+mlp_default_results <- rbind(
+  Training = train_performance_default,
+  Testing = test_performance_default
+)
+
+# Display results
+kable(mlp_default_results, digits = 2)
 ```
 
-## Including Plots
+### Part 2: Build a two-hidden-layer MLP model and change one of the other hyper-parameter values.
+```{r mlp-two-hidden-layer}
+# Change learning rate from the default
+l2 <- 0.1
 
-You can also embed plots, for example:
+# Build a two-hidden-layer MLP model
+model_2 <- MLP(
+  NA_Sales ~ .,
+  data = train,
+  control = Weka_control(
+    L = l2,
+    H = "1,1"
+  )
+)
 
-```{r pressure, echo=FALSE}
-plot(pressure)
+# View model
+model_2
+
+# Make predictions on the training set
+train_pred_2 <- predict(model_2, newdata = train)
+
+# Make predictions on the testing set
+test_pred_2 <- predict(model_2, newdata = test)
+
+# Evaluate training set performance
+train_performance_2 <- mmetric(
+  y = train$NA_Sales,
+  x = train_pred_2,
+  metric = metrics_list
+)
+
+# Evaluate testing set performance
+test_performance_2 <- mmetric(
+  y = test$NA_Sales,
+  x = test_pred_2,
+  metric = metrics_list
+)
+
+# Combine performance results
+model_2_performance <- rbind(
+  Training = train_performance_2,
+  Testing = test_performance_2
+)
+
+# Display results
+kable(model_2_performance, digits = 4)
 ```
 
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+# Code chunk 3: Build and evaluate SVM (ksvm) models for numeric prediction tasks.
+## Part A: Build and evaluate ksvm models for numeric prediction with the video game sales data.
+### Part 1: Build a model on ksvm()’s default setting on the training set. Evaluate the model performance on the training set and testing set.
+```{r ksvm}
+# Build ksvm model on the training set using default settings
+ksvm_default <- ksvm(NA_Sales ~ ., data = train)
+
+# Make predictions on the training set
+train_pred_ksvm_default <- predict(ksvm_default, newdata = train)
+
+# Make predictions on the testing set
+test_pred_ksvm_default <- predict(ksvm_default, newdata = test)
+
+# Evaluate training set performance
+train_performance_ksvm_default <- mmetric(
+  y = train$NA_Sales,
+  x = train_pred_ksvm_default,
+  metric = metrics_list
+)
+
+# Evaluate testing set performance
+test_performance_ksvm_default <- mmetric(
+  y = test$NA_Sales,
+  x = test_pred_ksvm_default,
+  metric = metrics_list
+)
+
+# Combine performance results
+ksvm_default_results <- rbind(
+  Training = train_performance_ksvm_default,
+  Testing = test_performance_ksvm_default
+)
+
+# Display results
+kable(ksvm_default_results, digits = 2)
+```
+
+### Part 2: Build a ksvm model using a different kernel function on the training set. Use default C value.
+```{r ksvm-different-kernel}
+# Build ksvm model using a different kernel function
+# vanilladot is the linear kernel
+ksvm_linear <- ksvm(
+  NA_Sales ~ .,
+  data = train,
+  kernel = "vanilladot"
+)
+
+# View model
+ksvm_linear
+
+# Make predictions on the training set
+train_pred_ksvm_linear <- predict(ksvm_linear, newdata = train)
+
+# Make predictions on the testing set
+test_pred_ksvm_linear <- predict(ksvm_linear, newdata = test)
+
+# Evaluate training set performance
+train_performance_ksvm_linear <- mmetric(
+  y = train$NA_Sales,
+  x = train_pred_ksvm_linear,
+  metric = metrics_list
+)
+
+# Evaluate testing set performance
+test_performance_ksvm_linear <- mmetric(
+  y = test$NA_Sales,
+  x = test_pred_ksvm_linear,
+  metric = metrics_list
+)
+
+# Combine performance results
+ksvm_linear_results <- rbind(
+  Training = train_performance_ksvm_linear,
+  Testing = test_performance_ksvm_linear
+)
+
+# Display results
+kable(ksvm_linear_results, digits = 2)
+```
+
+### Part 3: Build a ksvm model using a different cost value where C > 1.
+```{r ksvm-different-cost}
+# Set cost value greater than 1
+c_value <- 5
+
+# Build ksvm model using a different cost value
+ksvm_cost <- ksvm(
+  NA_Sales ~ .,
+  data = train,
+  C = c_value
+)
+
+# View model
+ksvm_cost
+
+# Make predictions on the training set
+train_pred_ksvm_cost <- predict(ksvm_cost, newdata = train)
+
+# Make predictions on the testing set
+test_pred_ksvm_cost <- predict(ksvm_cost, newdata = test)
+
+# Evaluate training set performance
+train_performance_ksvm_cost <- mmetric(
+  y = train$NA_Sales,
+  x = train_pred_ksvm_cost,
+  metric = metrics_list
+)
+
+# Evaluate testing set performance
+test_performance_ksvm_cost <- mmetric(
+  y = test$NA_Sales,
+  x = test_pred_ksvm_cost,
+  metric = metrics_list
+)
+
+# Combine performance results
+ksvm_cost_results <- rbind(
+  Training = train_performance_ksvm_cost,
+  Testing = test_performance_ksvm_cost
+)
+
+# Display results
+kable(ksvm_cost_results, digits = 2)
+```
+
+# Code chunk 4: Build and evaluate KNN (IBk) models for numeric prediction tasks.
+## Part A: Build and evaluate IBk models for numeric prediction with the video game sales data.
+### Part 1: Build a model on IBk()’s default setting on the training set.
