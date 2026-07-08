@@ -54,7 +54,19 @@ train_index <- createDataPartition(
 # Partition the data
 train <- nasales_model[train_index, ]
 test <- nasales_model[-train_index, ]
+
+# Inspect the dataset
+str(nasales)
+summary(nasales_model)
+glimpse(nasales_model)
+
+# Check dimensions of full, training, and testing datasets
+dim(nasales_model)
+dim(train)
+dim(test)
 ```
+
+This section builds and evaluates two MultilayerPerceptron models: one using the default settings and one using two hidden layers with a changed learning rate.
 
 # Code Chunk 2: Build and evaluate neural network models for numeric prediction tasks.
 ## Part A: Build and evaluate MLP models for numeric prediction with the video games sales data.
@@ -107,7 +119,7 @@ model_2 <- MLP(
   data = train,
   control = Weka_control(
     L = l2,
-    H = "1,1"
+    H = "5,5"
   )
 )
 
@@ -143,6 +155,8 @@ model_2_performance <- rbind(
 # Display results
 kable(model_2_performance, digits = 4)
 ```
+
+This section builds and evaluates three ksvm models: a default model, a model with a different kernel, and a model with a larger cost value.
 
 # Code chunk 3: Build and evaluate SVM (ksvm) models for numeric prediction tasks.
 ## Part A: Build and evaluate ksvm models for numeric prediction with the video game sales data.
@@ -269,6 +283,305 @@ ksvm_cost_results <- rbind(
 kable(ksvm_cost_results, digits = 2)
 ```
 
-# Code chunk 4: Build and evaluate KNN (IBk) models for numeric prediction tasks.
-## Part A: Build and evaluate IBk models for numeric prediction with the video game sales data.
-### Part 1: Build a model on IBk()’s default setting on the training set.
+This section builds and evaluates several IBk KNN models using default settings, a different K value, weighted voting, and automatic K selection.
+
+# Code chunk 4: Build and evaluate IBk models for numeric prediction tasks
+## Part A: Build and evaluate IBk models for numeric prediction with the video game sales data
+### Part 1: Build a model on IBk()'s default setting on the training set. Evaluate the model performance on the training set and testing set.
+
+```{r ibk-default}
+# Designate a shortened name IBk for the IBk KNN method in RWeka
+IBk <- make_Weka_classifier("weka/classifiers/lazy/IBk")
+
+# Build IBk model on the training set using default settings
+ibk_default <- IBk(
+  NA_Sales ~ .,
+  data = train
+)
+
+# View model
+ibk_default
+
+# Make predictions on the training set
+train_pred_ibk_default <- predict(ibk_default, newdata = train)
+
+# Make predictions on the testing set
+test_pred_ibk_default <- predict(ibk_default, newdata = test)
+
+# Evaluate training set performance
+train_performance_ibk_default <- mmetric(
+  y = train$NA_Sales,
+  x = train_pred_ibk_default,
+  metric = metrics_list
+)
+
+# Evaluate testing set performance
+test_performance_ibk_default <- mmetric(
+  y = test$NA_Sales,
+  x = test_pred_ibk_default,
+  metric = metrics_list
+)
+
+# Combine performance results
+ibk_default_results <- rbind(
+  Training = train_performance_ibk_default,
+  Testing = test_performance_ibk_default
+)
+
+# Display results
+kable(ibk_default_results, digits = 2)
+```
+
+### Part 2: Build an IBk model using a different K value
+```{r ibk-different-k}
+# Set K value
+k_value <- 5
+
+# Build IBk model using a different K value
+ibk_k <- IBk(
+  NA_Sales ~ .,
+  data = train,
+  control = Weka_control(K = k_value)
+)
+
+# View model
+ibk_k
+
+# Make predictions on the training set
+train_pred_ibk_k <- predict(ibk_k, newdata = train)
+
+# Make predictions on the testing set
+test_pred_ibk_k <- predict(ibk_k, newdata = test)
+
+# Evaluate training set performance
+train_performance_ibk_k <- mmetric(
+  y = train$NA_Sales,
+  x = train_pred_ibk_k,
+  metric = metrics_list
+)
+
+# Evaluate testing set performance
+test_performance_ibk_k <- mmetric(
+  y = test$NA_Sales,
+  x = test_pred_ibk_k,
+  metric = metrics_list
+)
+
+# Combine performance results
+ibk_k_results <- rbind(
+  Training = train_performance_ibk_k,
+  Testing = test_performance_ibk_k
+)
+
+# Display results
+kable(ibk_k_results, digits = 2)
+```
+
+### Part 3: Build an IBk model using a weighted voting approach
+```{r ibk-weighted-voting}
+# Build IBk model using weighted voting
+ibk_weighted <- IBk(
+  NA_Sales ~ .,
+  data = train,
+  control = Weka_control(I = TRUE)
+)
+
+# View model
+ibk_weighted
+
+# Make predictions on the training set
+train_pred_ibk_weighted <- predict(ibk_weighted, newdata = train)
+
+# Make predictions on the testing set
+test_pred_ibk_weighted <- predict(ibk_weighted, newdata = test)
+
+# Evaluate training set performance
+train_performance_ibk_weighted <- mmetric(
+  y = train$NA_Sales,
+  x = train_pred_ibk_weighted,
+  metric = metrics_list
+)
+
+# Evaluate testing set performance
+test_performance_ibk_weighted <- mmetric(
+  y = test$NA_Sales,
+  x = test_pred_ibk_weighted,
+  metric = metrics_list
+)
+
+# Combine performance results
+ibk_weighted_results <- rbind(
+  Training = train_performance_ibk_weighted,
+  Testing = test_performance_ibk_weighted
+)
+
+# Display results
+kable(ibk_weighted_results, digits = 2)
+```
+
+### Part 4: Build an IBk model by automatically selecting K
+```{r ibk-auto-k}
+# Build IBk model using automatic K selection
+# K sets the maximum K to consider, and X = TRUE enables cross-validation to choose K
+ibk_auto_k <- IBk(
+  NA_Sales ~ .,
+  data = train,
+  control = Weka_control(
+    K = 10,
+    X = TRUE
+  )
+)
+
+# View model
+ibk_auto_k
+
+# Make predictions on the training set
+train_pred_ibk_auto_k <- predict(ibk_auto_k, newdata = train)
+
+# Make predictions on the testing set
+test_pred_ibk_auto_k <- predict(ibk_auto_k, newdata = test)
+
+# Evaluate training set performance
+train_performance_ibk_auto_k <- mmetric(
+  y = train$NA_Sales,
+  x = train_pred_ibk_auto_k,
+  metric = metrics_list
+)
+
+# Evaluate testing set performance
+test_performance_ibk_auto_k <- mmetric(
+  y = test$NA_Sales,
+  x = test_pred_ibk_auto_k,
+  metric = metrics_list
+)
+
+# Combine performance results
+ibk_auto_k_results <- rbind(
+  Training = train_performance_ibk_auto_k,
+  Testing = test_performance_ibk_auto_k
+)
+
+# Display results
+kable(ibk_auto_k_results, digits = 2)
+```
+
+This section defines one general cross-validation function that can be reused with different model methods.
+
+# Code chunk 5: Cross-validation function for numeric prediction models
+## Part A/B: Define a named CV function that returns fold-by-fold metrics, means, and standard deviations
+```{r cv-function}
+cv_function <- function(df, target, nFolds, seedVal, method, metrics_list)
+{
+  # Create folds using the assigned seed value
+  set.seed(seedVal)
+  folds <- createFolds(df[[target]], k = nFolds)
+
+  # Create formula from target variable
+  model_formula <- as.formula(paste(target, "~ ."))
+
+  # Cross-validation loop
+  cv_results <- lapply(folds, function(x)
+  {
+    # Split into training and validation folds
+    train_fold <- df[-x, ]
+    test_fold <- df[x, ]
+
+    # Build model using the method passed into the function
+    pred_model <- method(
+      model_formula,
+      data = train_fold
+    )
+
+    # Predict on validation fold
+    pred <- predict(pred_model, newdata = test_fold)
+
+    # Evaluate performance
+    mmetric(
+      y = test_fold[[target]],
+      x = pred,
+      metric = metrics_list
+    )
+  })
+
+  # Convert fold results into a matrix
+  cv_results_m <- as.matrix(as.data.frame(cv_results))
+
+  # Rename columns as Fold 1, Fold 2, etc.
+  colnames(cv_results_m) <- paste0("Fold_", 1:nFolds)
+
+  # Calculate mean and standard deviation across folds
+  cv_mean <- rowMeans(cv_results_m)
+  cv_sd <- rowSds(cv_results_m)
+
+  # Combine fold-by-fold results with mean and standard deviation
+  cv_all <- cbind(
+    cv_results_m,
+    Mean = cv_mean,
+    Sd = cv_sd
+  )
+
+  # Display full CV table
+  kable(cv_all, digits = 2)
+}
+```
+
+This section uses 3-fold cross-validation to evaluate the default settings of three numeric prediction models: MultilayerPerceptron, ksvm, and IBk. The same cross-validation function is used for each model so that the fold-by-fold performance metrics, means, and standard deviations can be compared across models.
+
+# Code Chunk 6: 3 fold cross-validation of MLP, ksvm and IBk models 
+```{r three-fold-cv-default-models}
+# Make sure the Weka classifiers are defined
+MLP <- make_Weka_classifier("weka/classifiers/functions/MultilayerPerceptron")
+IBk <- make_Weka_classifier("weka/classifiers/lazy/IBk")
+
+# 3-fold CV for default MultilayerPerceptron
+cv_function(
+  df = df,
+  target = target,
+  nFolds = 3,
+  seedVal = seedVal,
+  method = MLP,
+  metrics_list = metrics_list
+)
+
+# 3-fold CV for default ksvm
+cv_function(
+  df = df,
+  target = target,
+  nFolds = 3,
+  seedVal = seedVal,
+  method = ksvm,
+  metrics_list = metrics_list
+)
+
+# 3-fold CV for default IBk
+cv_function(
+  df = df,
+  target = target,
+  nFolds = 3,
+  seedVal = seedVal,
+  method = IBk,
+  metrics_list = metrics_list
+)
+```
+
+Task II Reflections
+
+1. KSVM model performance results
+
+For the ksvm models, changing the parameters did affect the performance. The default ksvm model performed pretty well overall. When I changed the kernel to the linear kernel, the performance got worse because the RMSE increased and the R² decreased. This tells me that the relationship between the variables and NA_Sales is probably not very linear. A nonlinear kernel seems to fit this data better.
+
+When I changed the cost value to C = 5, the model improved compared to the default ksvm model. The RMSE decreased and the R² increased slightly. This means the model was able to fit the data better without hurting the testing performance. I think the higher cost value helped because it penalized errors more, so the model tried harder to fit the training data. In this case, that helped rather than causing serious overfitting. Overall, the ksvm model with C = 5 seemed to be the strongest ksvm model.
+
+2. MLP model performance results
+
+For the MLP models, the two-hidden-layer model performed better than the default model. The default MLP had higher testing error and a lower R². After changing the model to have two hidden layers and lowering the learning rate, the RMSE decreased and the R² increased. This means the adjusted MLP model made better predictions on the testing data.
+
+I think this happened because the two-hidden-layer model was able to capture more complex patterns in the data. The lower learning rate may have also helped the model learn more carefully instead of changing the weights too quickly. The tradeoff is that the adjusted MLP probably took longer to run. I did not record exact runtimes, but a more complex neural network usually takes more time because it has more calculations to complete. In this case, the slower speed seems acceptable because the model performance improved.
+
+3. Overall interpretation of the models
+
+This assignment helped me see how much model performance can change when hyperparameters are adjusted. The ksvm models showed that the default nonlinear approach worked better than the linear kernel, which suggests that the sales data has nonlinear relationships. The ksvm model with the higher cost value had the best performance among the ksvm models, so I would probably recommend that version if I were explaining the results to a supervisor.
+
+The MLP models also showed that changing the model structure can help. The two-hidden-layer MLP did better than the default MLP, which suggests that the neural network benefited from having more flexibility. However, I would also mention that this model may take longer to train and evaluate.
+
+The IBk models showed the clearest example of overfitting. The default K = 1 model did extremely well on the training data but much worse on the testing data. This means it mostly memorized the training data instead of learning a pattern that worked well on new data. Increasing or automatically selecting K helped make the model more reasonable, but I would still be cautious about relying on IBk compared with the better ksvm and MLP models. Overall, I learned that testing performance matters more than training performance because a model that looks perfect on training data may not actually generalize well.
