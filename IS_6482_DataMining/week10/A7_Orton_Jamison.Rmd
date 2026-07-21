@@ -15,11 +15,13 @@ editor_options:
 # Code Chunk 1: Package load, data import, inspection and partitioning.
 ## Part A: Load required packages.
 ```{r library}
-library(caret)
+library(C50)
+library(psych)
 library(RWeka)
-library(kernlab)
+library(caret)
 library(rminer)
 library(matrixStats)
 library(knitr)
+library(arules)
 library(tidyverse)
 ```
