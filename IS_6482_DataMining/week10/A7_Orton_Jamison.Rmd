@@ -12,9 +12,10 @@ editor_options:
   chunk_output_type: inline
 ---
 
-# Code Chunk 1: Package load, data import, inspection and partitioning.
-## Part A: Load required packages.
+# Code Chunk 1: Load packages, prepare and inspect the data.
+## Part A: Package loading, data import, and transformation.
 ```{r library}
+# Import libraries
 library(C50)
 library(psych)
 library(RWeka)
@@ -24,4 +25,33 @@ library(matrixStats)
 library(knitr)
 library(arules)
 library(tidyverse)
+
+# Import dataset
+mydir <- getwd()
+setwd(mydir)
+
+wmartvisits <- read.csv(file = "Walmart_visits_7trips.csv", stringsAsFactors = FALSE, fileEncoding = "latin1")
+
+# Inspect the dataset
+str(wmartvisits)
+
+# Convert categorical variables to factors
+wmartvisits <- wmartvisits %>%
+  mutate(
+    TripType = as.factor(TripType),
+    DOW = as.factor(DOW)
+  )
+
+# Show summary of the mutated dataset
+summary(wmartvisits)
+```
+
+## Part B: Understand this data set using correlation analysis.
+```{r correlation-analysis}
+
+```
+
+## Part C: Build a descriptive C5.0 decision tree using the entire data set, Prune the tree so that the number of tree leaves is smaller than 15, Plot the tree and show summary of the model to view tree rules and confusion matrix.
+```{r C5.0-decisiontree}
+
 ```
