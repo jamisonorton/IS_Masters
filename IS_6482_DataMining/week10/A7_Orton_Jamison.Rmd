@@ -1,0 +1,25 @@
+---
+title: 'A7: Clustering and Association Rule Mining'
+author: "Jamison Orton"
+date: "2026-07-21"
+output: 
+  html_document:
+    number_sections: yes
+    toc: yes
+    fig_width: 15
+    fig_height: 10
+editor_options: 
+  chunk_output_type: inline
+---
+
+# Code Chunk 1: Package load, data import, inspection and partitioning.
+## Part A: Load required packages.
+```{r library}
+library(caret)
+library(RWeka)
+library(kernlab)
+library(rminer)
+library(matrixStats)
+library(knitr)
+library(tidyverse)
+```
