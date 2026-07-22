@@ -26,10 +26,6 @@ library(knitr)
 library(arules)
 library(tidyverse)
 
-# Import dataset
-mydir <- getwd()
-setwd(mydir)
-
 wmartvisits <- read.csv(file = "Walmart_visits_7trips.csv", stringsAsFactors = FALSE, fileEncoding = "latin1")
 
 # Inspect the dataset
@@ -43,15 +39,337 @@ wmartvisits <- wmartvisits %>%
   )
 
 # Show summary of the mutated dataset
+str(wmartvisits)
 summary(wmartvisits)
 ```
 
 ## Part B: Understand this data set using correlation analysis.
 ```{r correlation-analysis}
+# Select only numeric variables
+wmartvisits_numeric <- wmartvisits %>% 
+  select(where(is.numeric))
 
+# Inspect the numeric variables included
+str(wmartvisits_numeric)
+
+# Show distributions and correlations
+pairs.panels(
+  wmartvisits_numeric,
+  method = "pearson",
+  hist.col = "lightgray",
+  density = TRUE,
+  ellipses = TRUE,
+  lm = TRUE,
+  stars = TRUE
+)
 ```
 
 ## Part C: Build a descriptive C5.0 decision tree using the entire data set, Prune the tree so that the number of tree leaves is smaller than 15, Plot the tree and show summary of the model to view tree rules and confusion matrix.
-```{r C5.0-decisiontree}
+```{r C5.0-decision-tree}
+# Confirm that the target variable is categorical
+wmartvisits$TripType <- as.factor(wmartvisits$TripType)
 
+# Confirm that day of week is categorical
+wmartvisits$DOW <- as.factor(wmartvisits$DOW)
+
+# Build a pruned C5.0 decision tree using the entire dataset
+# A smaller CF value generally results in more aggressive pruning
+wmart_c50 <- C50::C5.0(
+  TripType ~ .,
+  data = wmartvisits,
+  trials = 1,
+  rules = FALSE,
+  control = C50::C5.0Control(
+    CF = 0.01
+  )
+)
+
+# Size of the pruned tree
+wmart_c50$size
+
+# Plot the pruned decision tree
+plot(
+  wmart_c50,
+  main = "Pruned C5.0 Decision Tree for Walmart Trip Type"
+)
+
+# Display the tree rules, tree size, training errors,
+# and confusion matrix
+summary(wmart_c50)
 ```
+
+# Code Chunk 2: Use SimpleKMeans clustering to understand visits.
+## Part A: Save the Number of Trip Types and Remove the Target Variable.
+```{r clustering-data-preparation}
+# Save the number of unique TripType factor levels
+TripType.levels <- nlevels(wmartvisits$TripType)
+
+# Display the number of unique trip types
+TripType.levels
+
+# Create a copy of the data for clustering
+wmartvisits_cluster <- wmartvisits
+
+# Remove TripType because clustering is an unsupervised method
+wmartvisits_cluster$TripType <- NULL
+
+# Confirm that TripType was removed
+str(wmartvisits_cluster)
+```
+
+The variable TripType.levels stores the number of unique categories in the TripType factor. The TripType column was then removed from the clustering input because clustering is an unsupervised method and should not use the known target classification when creating the clusters.
+
+## Part B: K-Means Clustering with Random Initialization and Euclidean Distance.
+```{r clustering-random-euclidean}
+# Create clusters using:
+# N = number of clusters
+# V = display cluster standard deviations
+# Random initialization and Euclidean distance are the defaults
+cluster_random_euclidean <- RWeka::SimpleKMeans(
+  wmartvisits_cluster,
+  control = RWeka::Weka_control(
+    N = TripType.levels,
+    init = 0,
+    S = 123,
+    V = TRUE,
+    A = "weka.core.EuclideanDistance"
+  )
+)
+
+# Show clustering information, cluster sizes,
+# standard deviations, and centroids
+cluster_random_euclidean
+```
+
+## Part C: K-Means++ Initialization and Euclidean Distance.
+```{r clustering-kmeans-plus-plus-euclidean}
+# Create clusters using:
+# P = K-means++ initialization
+# Euclidean distance remains the default
+cluster_kmeanspp_euclidean <- RWeka::SimpleKMeans(
+  wmartvisits_cluster,
+  control = RWeka::Weka_control(
+    N = TripType.levels,
+    init = 1,
+    S = 123,
+    V = TRUE,
+    A = "weka.core.EuclideanDistance"
+  )
+)
+
+# Show clustering information, cluster sizes,
+# standard deviations, and centroids
+cluster_kmeanspp_euclidean
+```
+
+## Part D: K-Means++ Initialization and Manhattan Distance.
+```{r clustering-kmeans-plus-plus-manhattan}
+# Cluster visits using K-means++ initialization
+# and Manhattan distance
+cluster_kmeanspp_manhattan <- RWeka::SimpleKMeans(
+  wmartvisits_cluster,
+  control = RWeka::Weka_control(
+    N = TripType.levels,
+    init = 1,
+    S = 123,
+    V = TRUE,
+    A = "weka.core.ManhattanDistance"
+  )
+)
+
+# Show cluster sizes, standard deviations, and centroids
+cluster_kmeanspp_manhattan
+```
+
+This model continues to use K-means++ initialization and keeps the number of clusters equal to TripType.levels. However, Manhattan distance replaces Euclidean distance. When Manhattan distance is used, Weka calculates cluster centers using component-wise medians rather than component-wise means.
+
+## Part E: Alternative Clustering Configuration.
+```{r clustering-alternative-model}
+# Increase the number of clusters by one
+alternative_cluster_count <- TripType.levels + 1
+
+# Create an alternative clustering model using:
+# Random initial assignment
+# Manhattan distance
+# One additional cluster
+cluster_alternative <- RWeka::SimpleKMeans(
+  wmartvisits_cluster,
+  control = RWeka::Weka_control(
+    N = alternative_cluster_count,
+    V = TRUE,
+    S = 456,
+    A = "weka.core.ManhattanDistance"
+  )
+)
+
+# Show the selected number of clusters
+alternative_cluster_count
+
+# Show clustering information, cluster sizes,
+# standard deviations, and centroids
+cluster_alternative
+```
+
+The alternative model uses TripType.levels + 1 clusters, random initial cluster assignment, and Manhattan distance. Increasing the cluster count allows the algorithm to create a more detailed segmentation of the Walmart visits. The resulting cluster sizes, within-cluster standard deviations, and centroids can be compared with the previous models to determine how the selected configuration affects the clustering results.
+
+# Code Chunk 3 - Market Basket Analysis with the Walmart dept baskets.
+## Part A: Import the Walmart Basket Transactions.
+```{r import-basket-transactions}
+# Import the long-format basket data as a sparse transactions object
+Dept_baskets <- read.transactions("Walmart_baskets_1week.csv", format="single", sep = ",", header = TRUE, cols=c("VisitNumber","DepartmentDescription"))
+
+# Show a summary of the transaction data
+summary(Dept_baskets)
+```
+
+## Part B: Inspect the First 15 Transactions.
+```{r inspect-first-transactions}
+# Inspect the first 15 shopping transactions
+inspect(Dept_baskets[1:15])
+```
+
+## Part C: Plot the 15 Most Frequent Items.
+```{r item-frequency-plot}
+# Plot the 15 departments with the highest transaction frequencies
+itemFrequencyPlot(
+  Dept_baskets,
+  topN = 15,
+  type = "relative",
+  decreasing = TRUE,
+  horiz = TRUE,
+  main = "Top 15 Departments by Relative Transaction Frequency",
+  xlab = "Proportion of Transactions",
+  cex.names = 0.8
+)
+```
+
+The plot displays the 15 departments appearing in the greatest percentage of Walmart transactions. Setting type = "relative" expresses item frequency relative to the total number of transactions rather than as a raw transaction count.
+
+## Part D: Association Rule Mining.
+### Part D.i: Generate Approximately 50–100 Association Rules.
+```{r association-rules-50-100}
+# Generate approximately 50 to 100 association rules
+rules_50_100 <- apriori(
+  Dept_baskets,
+  parameter = list(
+    support = 0.02,
+    confidence = 0.85,
+    minlen = 2,
+    maxlen = 4,
+    target = "rules"
+  )
+)
+
+# Display the number of generated rules
+length(rules_50_100)
+
+# Sort the rules from highest to lowest lift
+rules_50_100_lift <- sort(
+  rules_50_100,
+  by = "lift",
+  decreasing = TRUE
+)
+
+# Show the rules in descending order of lift
+inspect(rules_50_100_lift)
+```
+
+The first association-rule model uses a minimum support threshold of 0.02 and a minimum confidence threshold of 0.85. A support value of 0.02 requires a rule to occur in at least 2% of the Walmart transactions. A confidence value of 0.85 requires the right-hand-side item to appear in at least 85% of transactions containing the left-hand-side item or items.
+
+The rules are sorted in descending order of lift. A lift value greater than 1 indicates that the items occur together more frequently than would be expected if they were independent.
+
+### Part D.ii: Generate Approximately 100–200 Association Rules.
+```{r association-rules-100-200}
+# Generate approximately 100 to 200 association rules
+rules_100_200 <- apriori(
+  Dept_baskets,
+  parameter = list(
+    support = 0.02,
+    confidence = 0.80,
+    minlen = 2,
+    maxlen = 6,
+    target = "rules"
+  )
+)
+
+# Display the number of generated rules
+length(rules_100_200)
+
+# Sort the rules from highest to lowest lift
+rules_100_200_lift <- sort(
+  rules_100_200,
+  by = "lift",
+  decreasing = TRUE
+)
+
+# Show the rules in descending order of lift
+inspect(rules_100_200_lift)
+```
+
+The second model retains the minimum support threshold of 0.02 but lowers the minimum confidence threshold from 0.85 to 0.80. Lowering the confidence requirement allows additional relationships to qualify as association rules, resulting in a larger rule set.
+
+The rules are again sorted in descending order of lift so that the strongest positive associations appear first.
+
+# Task 2: Reflections.
+1. Association Rule Mining Results
+
+For the first association rule model, I used a minimum support of 0.02 and minimum confidence of 0.85, which produced 78 rules. For the second model, I kept support at 0.02 and lowered confidence to 0.80, producing 185 rules.
+
+Using the final thresholds of 0.02 support and 0.80 confidence, two rules tied for the highest lift of 5.0926:
+
+* {COMM BREAD, FROZEN FOODS, GROCERY DRY GOODS, PRODUCE} => {DAIRY}
+* {COMM BREAD, DSD GROCERY, FROZEN FOODS, GROCERY DRY GOODS, PRODUCE} => {DAIRY}
+
+Both rules had support of 0.022 and confidence of 0.9778. This means they appeared in 2.2% of all baskets, and 97.78% of baskets containing the left-side departments also contained dairy.
+
+Several rules tied for the highest support of 0.059. One was:
+
+{DSD GROCERY, GROCERY DRY GOODS, PRODUCE} => {DAIRY}
+
+This rule had confidence of 0.8138 and lift of 4.2385. It appeared in 5.9% of all baskets, or 118 transactions.
+
+The highest-confidence rule was:
+
+{COMM BREAD, DAIRY, DSD GROCERY, FROZEN FOODS} => {GROCERY DRY GOODS}
+
+It had confidence of 0.9821, support of 0.0275, and lift of 4.5365.
+
+I would recommend the highest-support rule involving DSD grocery, grocery dry goods, produce, and dairy. Although it did not have the highest lift or confidence, it affected the largest number of transactions and still had strong confidence and lift. Executives could use this pattern for product placement, coupons, or cross-promotions involving these departments.
+
+2. Lessons from the Models
+
+The C5.0 decision tree showed that NetQty was the most important variable and was used for 100% of the observations. UniqDepts was also used for 26.32% of observations. The pruned tree had only five leaves, making it easy to interpret, but its training error was 39.9%. This suggests that a very small tree provides a useful summary but does not capture every difference among the trip types.
+
+The random-initialization Euclidean clustering model required 22 iterations and had a within-cluster sum of squared errors of 4006.49. K-means++ required only 8 iterations and reduced this value to 2419.14. Therefore, K-means++ selected better starting centers and produced more compact clusters.
+
+The Manhattan-distance models revealed several shopping patterns. Some clusters represented quick trips with only one to three items and one or two departments. Other clusters represented medium-sized trips with approximately 9–18 items. The largest cluster types contained about 25 unique items, 30 total items, and 10 departments. These groups may represent quick fill-in visits, regular shopping trips, and large stock-up visits.
+
+Increasing the cluster count from seven to eight created more detailed customer segments. The results also showed that day of the week strongly influenced several clusters. For example, some groups were mostly Sunday, Tuesday, Wednesday, or Friday visits. This suggests that shopping behavior differs both by basket size and by shopping day.
+
+The association rules showed that dairy frequently appeared with produce, bread, frozen foods, and grocery departments. Lowering confidence from 0.85 to 0.80 increased the rule count from 78 to 185 because more relationships met the less restrictive requirement.
+
+3. Explanation to a Supervisor
+
+The models provide different but complementary information about Walmart shopping visits. The C5.0 decision tree explains known trip types using simple rules. Net quantity was the strongest predictor, followed by the number of unique departments. For example, very small or negative net quantities were separated from large visits with more than 19 net items. The tree is easy to understand because it has only five leaves, but its 39.9% error rate means it should be treated as a broad description rather than a highly accurate prediction system.
+
+The clustering models identified customer groups without using the known TripType variable. They revealed small convenience trips, medium shopping trips, large multi-department trips, and visits with different return patterns. K-means++ produced a better Euclidean solution than random initialization because it converged faster and had a lower within-cluster error. Manhattan distance was useful because it reduced the influence of unusually large purchases.
+
+The association rules identified departments that customers commonly visited together. Dairy was especially connected with produce, bread, frozen foods, and grocery products. These findings could support cross-promotions, store-layout decisions, and personalized recommendations. However, the rules show relationships, not cause and effect, so promotions should be tested before being widely implemented.
+
+Additional Questions
+
+1. Changes in Cluster Standard Deviations
+
+Increasing the number of clusters from seven to eight generally created more specific groups. In the seven-cluster Manhattan model, the largest-shopping cluster had a centroid of 25 unique items, 30 total items, and 30 net items. Its standard deviations were 13.51, 17.14, and 17.07, respectively.
+
+In the eight-cluster model, the largest-shopping cluster had 19 unique items, 22 total items, and 22 net items. Its standard deviations decreased to 12.61, 15.39, and 15.32. Another cluster represented visits with approximately 12 unique items and 15 total items.
+
+This suggests that adding a cluster divided the original large-trip group into smaller groups, making the largest group somewhat more consistent. Not every standard deviation decreased because the random initialization also reassigned visits among clusters. Cluster numbers should not be compared directly because Cluster 1 in one model may represent a different shopping pattern from Cluster 1 in another model.
+
+2. Interpretation of Support and Confidence
+
+Support measures how often all departments in a rule appear together in the entire dataset. For example, support of 0.02 means that the department combination appeared in at least 2% of the 2,000 shopping baskets, or approximately 40 transactions.
+
+Confidence measures how often the right-side department appeared when the left-side departments were present. For example, confidence of 0.80 means that 80% of baskets containing the left-side departments also contained the right-side department.
+
+My support threshold of 0.02 was much lower than my confidence thresholds of 0.85 and 0.80. This was appropriate because Walmart baskets contain many different department combinations. A useful combination may occur in only a small percentage of all visits but still be highly predictable when its left-side departments appear. The lower support threshold found these less common relationships, while the higher confidence threshold kept only dependable rules.
