@@ -2,14 +2,12 @@
 title: "Flight Delay Case"
 author: "Jamison Orton"
 date: "October 2, 2026"
-output:
-  html_document:
+format:
+  html:
     toc: true
-    toc_float: true
-    toc_depth: 3
 ---
 ## R Packages
-```{r, PackageLoading}
+```{r library}
 library(tidyverse)
 ```
 
