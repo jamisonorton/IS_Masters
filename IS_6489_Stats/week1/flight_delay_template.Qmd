@@ -14,7 +14,8 @@ library(tidyverse)
 ## Q1
 
 ```{r, math_stuff}
-
+read.csv("flight_delay_clean.csv") -> df
+summary(df)
 ```
 
 
