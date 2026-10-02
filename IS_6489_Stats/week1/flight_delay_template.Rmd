@@ -1,0 +1,49 @@
+---
+title: "Flight Delay Case"
+author: "Jamison Orton"
+date: "October 2, 2026"
+output:
+  html_document:
+    toc: true
+    toc_float: true
+    toc_depth: 3
+---
+
+Lightly comment your code and use pipes for readability.
+
+Comment briefly on each of the questions, as directed.  Only the the final question requires a lengthier response.
+
+## Q1
+
+```{r}
+
+```
+
+
+## Q2
+
+```{r}
+
+```
+
+
+## Q3
+
+```{r}
+
+```
+
+
+## Q4
+
+```{r}
+
+```
+
+
+## Q5
+
+```{r}
+
+```
+
