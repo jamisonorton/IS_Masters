@@ -8,14 +8,14 @@ output:
     toc_float: true
     toc_depth: 3
 ---
-
-Lightly comment your code and use pipes for readability.
-
-Comment briefly on each of the questions, as directed.  Only the the final question requires a lengthier response.
+## R Packages
+```{r, PackageLoading}
+library(tidyverse)
+```
 
 ## Q1
 
-```{r}
+```{r, math_stuff}
 
 ```
 
