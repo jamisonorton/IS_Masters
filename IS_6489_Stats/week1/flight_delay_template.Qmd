@@ -29,7 +29,7 @@ flightdf %>%
 ```
 Contractual obligations aside, which measure of central tendency would be most appropriate for comparing airline performance?
 
-According to the data, if only one measure can be used, the median is a better measure of central tendency. When looking at the mean vs median of the data for RegionEx its mean is significantly larger than the median. This means there is a few extream outliers that are increasing the average delay time. This can be further explained by including the 90th percentile and the standard deviation. With a very large standard deviation as shown in the RegionEx several outliers are causing a significant increase to the mean. 
+The median is the most appropriate measure of central tendency for comparing typical airline performance. RegionEx has a mean delay of 15.66 minutes but a median delay of only 9 minutes, indicating that unusually large delays are pulling its mean upward. Its standard deviation of 27.65 minutes also shows considerably more variability than MDA. Therefore, the median provides a more representative comparison of a typical flight. Using the median, MDA’s typical delay is 13 minutes compared with 9 minutes for RegionEx. However, if the goal were to measure total passenger impact, the mean would also be important because it reflects the influence of extreme delays.
 
 ## Q2
 Inspect the distribution of RegionEx’s arrival delays by constructing a histogram of the number of arrival delay minutes of RegionEx’s flights. Do the same for MDA’s flights. Hint: use facet_wrap().
