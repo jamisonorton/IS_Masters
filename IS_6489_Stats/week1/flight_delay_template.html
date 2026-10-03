@@ -90,8 +90,16 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
    
   <ul>
   <li><a href="#r-packages" id="toc-r-packages" class="nav-link active" data-scroll-target="#r-packages">R Packages</a></li>
-  <li><a href="#q1" id="toc-q1" class="nav-link" data-scroll-target="#q1">Q1</a></li>
-  <li><a href="#q2" id="toc-q2" class="nav-link" data-scroll-target="#q2">Q2</a></li>
+  <li><a href="#q1" id="toc-q1" class="nav-link" data-scroll-target="#q1">Q1</a>
+  <ul class="collapse">
+  <li><a href="#compute-the-mean-median-90th-percentile-and-standard-deviation-of-arrival-delay-minutes-for-regionex-flights.-do-the-same-for-mda-flights." id="toc-compute-the-mean-median-90th-percentile-and-standard-deviation-of-arrival-delay-minutes-for-regionex-flights.-do-the-same-for-mda-flights." class="nav-link" data-scroll-target="#compute-the-mean-median-90th-percentile-and-standard-deviation-of-arrival-delay-minutes-for-regionex-flights.-do-the-same-for-mda-flights.">Compute the mean, median, 90th percentile, and standard deviation of arrival delay minutes for RegionEx flights. Do the same for MDA flights.</a></li>
+  <li><a href="#contractual-obligations-aside-which-measure-of-central-tendency-would-be-most-appropriate-for-comparing-airline-performance" id="toc-contractual-obligations-aside-which-measure-of-central-tendency-would-be-most-appropriate-for-comparing-airline-performance" class="nav-link" data-scroll-target="#contractual-obligations-aside-which-measure-of-central-tendency-would-be-most-appropriate-for-comparing-airline-performance">Contractual obligations aside, which measure of central tendency would be most appropriate for comparing airline performance?</a></li>
+  </ul></li>
+  <li><a href="#q2" id="toc-q2" class="nav-link" data-scroll-target="#q2">Q2</a>
+  <ul class="collapse">
+  <li><a href="#inspect-the-distribution-of-regionexs-arrival-delays-by-constructing-a-histogram-of-the-number-of-arrival-delay-minutes-of-regionexs-flights.-do-the-same-for-mdas-flights.-hint-use-facet_wrap." id="toc-inspect-the-distribution-of-regionexs-arrival-delays-by-constructing-a-histogram-of-the-number-of-arrival-delay-minutes-of-regionexs-flights.-do-the-same-for-mdas-flights.-hint-use-facet_wrap." class="nav-link" data-scroll-target="#inspect-the-distribution-of-regionexs-arrival-delays-by-constructing-a-histogram-of-the-number-of-arrival-delay-minutes-of-regionexs-flights.-do-the-same-for-mdas-flights.-hint-use-facet_wrap.">Inspect the distribution of RegionEx’s arrival delays by constructing a histogram of the number of arrival delay minutes of RegionEx’s flights. Do the same for MDA’s flights. Hint: use facet_wrap().</a></li>
+  <li><a href="#how-do-these-two-distributions-compare" id="toc-how-do-these-two-distributions-compare" class="nav-link" data-scroll-target="#how-do-these-two-distributions-compare">How do these two distributions compare?</a></li>
+  </ul></li>
   <li><a href="#q3" id="toc-q3" class="nav-link" data-scroll-target="#q3">Q3</a></li>
   <li><a href="#create-a-summary-table-of-percent-delayed-by-airline." id="toc-create-a-summary-table-of-percent-delayed-by-airline." class="nav-link" data-scroll-target="#create-a-summary-table-of-percent-delayed-by-airline.">Create a summary table of percent delayed by airline.</a>
   <ul class="collapse">
@@ -150,39 +158,74 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 ✖ dplyr::lag()    masks stats::lag()
 ℹ Use the conflicted package (&lt;http://conflicted.r-lib.org/&gt;) to force all conflicts to become errors</code></pre>
 </div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">options</span>(<span class="at">pillar.sigfig =</span> <span class="dv">5</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 </section>
 <section id="q1" class="level2">
 <h2 class="anchored" data-anchor-id="q1">Q1</h2>
-<p>Compute the mean, median, 90th percentile, and standard deviation of arrival delay minutes for RegionEx flights. Do the same for MDA flights.</p>
+<section id="compute-the-mean-median-90th-percentile-and-standard-deviation-of-arrival-delay-minutes-for-regionex-flights.-do-the-same-for-mda-flights." class="level3">
+<h3 class="anchored" data-anchor-id="compute-the-mean-median-90th-percentile-and-standard-deviation-of-arrival-delay-minutes-for-regionex-flights.-do-the-same-for-mda-flights.">Compute the mean, median, 90th percentile, and standard deviation of arrival delay minutes for RegionEx flights. Do the same for MDA flights.</h3>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>flightdf <span class="ot">&lt;-</span> <span class="fu">read.csv</span>(<span class="st">"flight_delay_clean.csv"</span>)</span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>flightdf <span class="sc">%&gt;%</span></span>
-<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(airline <span class="sc">%in%</span> <span class="fu">c</span>(<span class="st">"RegionEx"</span>, <span class="st">"MDA"</span>)) <span class="sc">%&gt;%</span></span>
-<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(airline) <span class="sc">%&gt;%</span></span>
-<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(</span>
-<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">n =</span> <span class="fu">n</span>(),</span>
-<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>    <span class="at">mean_delay =</span> <span class="fu">mean</span>(delay, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
-<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>    <span class="at">median_delay =</span> <span class="fu">median</span>(delay, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
-<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>    <span class="at">perc_90 =</span> <span class="fu">as.numeric</span>(<span class="fu">quantile</span>(delay, <span class="at">probs =</span> <span class="fl">0.90</span>, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)),</span>
-<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>    <span class="at">sd_delay =</span> <span class="fu">sd</span>(delay, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)</span>
-<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a>  )</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>flightdf <span class="ot">&lt;-</span> <span class="fu">read.csv</span>(<span class="st">"flight_delay_clean.csv"</span>)</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>flightdf <span class="sc">%&gt;%</span></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(airline <span class="sc">%in%</span> <span class="fu">c</span>(<span class="st">"RegionEx"</span>, <span class="st">"MDA"</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(airline) <span class="sc">%&gt;%</span></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(</span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">n =</span> <span class="fu">n</span>(),</span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>    <span class="at">mean_delay =</span> <span class="fu">round</span>(<span class="fu">mean</span>(delay), <span class="dv">2</span>),</span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>    <span class="at">median_delay =</span> <span class="fu">round</span>(<span class="fu">median</span>(delay), <span class="dv">2</span>),</span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>    <span class="at">perc_90 =</span> <span class="fu">round</span>(<span class="fu">as.numeric</span>(<span class="fu">quantile</span>(delay, <span class="at">probs =</span> <span class="fl">0.90</span>)), <span class="dv">2</span>),</span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a>    <span class="at">sd_delay =</span> <span class="fu">round</span>(<span class="fu">sd</span>(delay), <span class="dv">2</span>)</span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a>  )</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 2 × 6
   airline      n mean_delay median_delay perc_90 sd_delay
   &lt;chr&gt;    &lt;int&gt;      &lt;dbl&gt;        &lt;dbl&gt;   &lt;dbl&gt;    &lt;dbl&gt;
-1 MDA        120       10.9           13    16.1     6.34
-2 RegionEx   240       15.7            9    21      27.7 </code></pre>
+1 MDA        120      10.9            13    16.1     6.34
+2 RegionEx   240      15.66            9    21      27.65</code></pre>
 </div>
 </div>
-<p>Contractual obligations aside, which measure of central tendency would be most appropriate for comparing airline performance?</p>
-<p>According to the data, if only one measure can be used, the median is a better measure of central tendency. When looking at the mean vs median of the data for RegionEx its mean is significantly larger than the median. This means there is a few extream outliers that are increasing the average delay time. This can be further explained by including the 90th percentile and the standard deviation. With a very large standard deviation as shown in the RegionEx several outliers are causing a significant increase to the mean.</p>
+</section>
+<section id="contractual-obligations-aside-which-measure-of-central-tendency-would-be-most-appropriate-for-comparing-airline-performance" class="level3">
+<h3 class="anchored" data-anchor-id="contractual-obligations-aside-which-measure-of-central-tendency-would-be-most-appropriate-for-comparing-airline-performance">Contractual obligations aside, which measure of central tendency would be most appropriate for comparing airline performance?</h3>
+<p>Removing contractual obligation, using the median would most likely be the best measure of central tendency for comparing typical airline performance. RegionEx has a mean delay of 15.66 minutes but a median delay of only 9. This difference coupled with the high standard deviation of 27.65 shows that there are several large outliers skyrocketing the mean higher but that is not the “typical” flight experience. However, if the goal is to measure total passenger impact, the mean would be a more appropriate comparison because it reflects the influence of extreme delays.</p>
+</section>
 </section>
 <section id="q2" class="level2">
 <h2 class="anchored" data-anchor-id="q2">Q2</h2>
-<p>Inspect the distribution of RegionEx’s arrival delays by constructing a histogram of the number of arrival delay minutes of RegionEx’s flights. Do the same for MDA’s flights. Hint: use facet_wrap().</p>
-<p>How do these two distributions compare?</p>
+<section id="inspect-the-distribution-of-regionexs-arrival-delays-by-constructing-a-histogram-of-the-number-of-arrival-delay-minutes-of-regionexs-flights.-do-the-same-for-mdas-flights.-hint-use-facet_wrap." class="level3">
+<h3 class="anchored" data-anchor-id="inspect-the-distribution-of-regionexs-arrival-delays-by-constructing-a-histogram-of-the-number-of-arrival-delay-minutes-of-regionexs-flights.-do-the-same-for-mdas-flights.-hint-use-facet_wrap.">Inspect the distribution of RegionEx’s arrival delays by constructing a histogram of the number of arrival delay minutes of RegionEx’s flights. Do the same for MDA’s flights. Hint: use facet_wrap().</h3>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>flightdf <span class="sc">%&gt;%</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(airline <span class="sc">==</span> <span class="st">"RegionEx"</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>() <span class="sc">+</span></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_histogram</span>(<span class="fu">aes</span>(<span class="at">x =</span> delay, <span class="at">color =</span> airline), <span class="at">binwidth =</span> <span class="dv">20</span>) <span class="sc">+</span></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggtitle</span>(<span class="st">"Histogram of RegionEx's arrival delay minutes"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="flight_delay_template_files/figure-html/unnamed-chunk-1-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>flightdf <span class="sc">%&gt;%</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(airline <span class="sc">==</span> <span class="st">"MDA"</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>() <span class="sc">+</span></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_histogram</span>(<span class="fu">aes</span>(<span class="at">x =</span> delay, <span class="at">color =</span> airline), <span class="at">binwidth =</span> <span class="dv">20</span>) <span class="sc">+</span></span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggtitle</span>(<span class="st">"Histogram of MDA's arrival delay minutes"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="flight_delay_template_files/figure-html/unnamed-chunk-1-2.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+</section>
+<section id="how-do-these-two-distributions-compare" class="level3">
+<h3 class="anchored" data-anchor-id="how-do-these-two-distributions-compare">How do these two distributions compare?</h3>
+</section>
 </section>
 <section id="q3" class="level2">
 <h2 class="anchored" data-anchor-id="q3">Q3</h2>

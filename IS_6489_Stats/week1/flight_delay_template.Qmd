@@ -9,10 +9,11 @@ format:
 ## R Packages
 ```{r libraries}
 library(tidyverse)
+options(pillar.sigfig = 5)
 ```
 
 ## Q1
-Compute the mean, median, 90th percentile, and standard deviation of arrival delay minutes for RegionEx flights. Do the same for MDA flights.
+### Compute the mean, median, 90th percentile, and standard deviation of arrival delay minutes for RegionEx flights. Do the same for MDA flights.
 ```{r, math_stuff}
 flightdf <- read.csv("flight_delay_clean.csv")
 
@@ -21,24 +22,38 @@ flightdf %>%
   group_by(airline) %>%
   summarise(
     n = n(),
-    mean_delay = mean(delay, na.rm = TRUE),
-    median_delay = median(delay, na.rm = TRUE),
-    perc_90 = as.numeric(quantile(delay, probs = 0.90, na.rm = TRUE)),
-    sd_delay = sd(delay, na.rm = TRUE)
+    mean_delay = round(mean(delay), 2),
+    median_delay = round(median(delay), 2),
+    perc_90 = round(as.numeric(quantile(delay, probs = 0.90)), 2),
+    sd_delay = round(sd(delay), 2)
   )
 ```
-Contractual obligations aside, which measure of central tendency would be most appropriate for comparing airline performance?
+### Contractual obligations aside, which measure of central tendency would be most appropriate for comparing airline performance?
 
-The median is the most appropriate measure of central tendency for comparing typical airline performance. RegionEx has a mean delay of 15.66 minutes but a median delay of only 9 minutes, indicating that unusually large delays are pulling its mean upward. Its standard deviation of 27.65 minutes also shows considerably more variability than MDA. Therefore, the median provides a more representative comparison of a typical flight. Using the median, MDA’s typical delay is 13 minutes compared with 9 minutes for RegionEx. However, if the goal were to measure total passenger impact, the mean would also be important because it reflects the influence of extreme delays.
+Removing contractual obligation, using the median would most likely be the best measure of central tendency for comparing typical airline performance. RegionEx has a mean delay of 15.66 minutes but a median delay of only 9. This difference coupled with the high standard deviation of 27.65 shows that there are several large outliers skyrocketing the mean higher but that is not the "typical" flight experience. However, if the goal is to measure total passenger impact, the mean would be a more appropriate comparison because it reflects the influence of extreme delays.
 
 ## Q2
-Inspect the distribution of RegionEx’s arrival delays by constructing a histogram of the number of arrival delay minutes of RegionEx’s flights. Do the same for MDA’s flights. Hint: use facet_wrap().
-
-How do these two distributions compare?
+### Inspect the distribution of RegionEx’s arrival delays by constructing a histogram of the number of arrival delay minutes of RegionEx’s flights. Do the same for MDA’s flights. Hint: use facet_wrap().
 ```{r}
-
+flightdf %>%
+  filter(airline %in% c("RegionEx", "MDA")) %>%
+  ggplot(aes(x = delay)) +
+  geom_histogram(
+    aes(fill = airline),
+    binwidth = 20,
+    color = "black"
+  ) +
+  facet_wrap(~airline) +
+  labs(
+    title = "Arrival Delay Distributions by Airline",
+    x = "Arrival delay minutes",
+    y = "Number of flights"
+  ) +
+  theme_minimal()
 ```
 
+### How do these two distributions compare?
+Both of these histograms are very heavily right skewed. This shows 
 
 ## Q3
 So far you have considered airline performance in terms of minutes delayed. However, the performance metrics, as noted in the case description, also include the percentage of delayed flights. Let’s verify that MDA’s COO is correct: does RegionEx have a higher percentage of delayed flights?
