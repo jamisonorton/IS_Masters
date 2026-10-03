@@ -93,8 +93,11 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <li><a href="#q1" id="toc-q1" class="nav-link" data-scroll-target="#q1">Q1</a></li>
   <li><a href="#q2" id="toc-q2" class="nav-link" data-scroll-target="#q2">Q2</a></li>
   <li><a href="#q3" id="toc-q3" class="nav-link" data-scroll-target="#q3">Q3</a></li>
+  <li><a href="#create-a-summary-table-of-percent-delayed-by-airline." id="toc-create-a-summary-table-of-percent-delayed-by-airline." class="nav-link" data-scroll-target="#create-a-summary-table-of-percent-delayed-by-airline.">Create a summary table of percent delayed by airline.</a>
+  <ul class="collapse">
   <li><a href="#q4" id="toc-q4" class="nav-link" data-scroll-target="#q4">Q4</a></li>
   <li><a href="#q5" id="toc-q5" class="nav-link" data-scroll-target="#q5">Q5</a></li>
+  </ul></li>
   </ul>
 </nav>
 </div>
@@ -151,52 +154,58 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="q1" class="level2">
 <h2 class="anchored" data-anchor-id="q1">Q1</h2>
+<p>Compute the mean, median, 90th percentile, and standard deviation of arrival delay minutes for RegionEx flights. Do the same for MDA flights.</p>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">read.csv</span>(<span class="st">"flight_delay_clean.csv"</span>) <span class="ot">-&gt;</span> df</span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(df)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>flightdf <span class="ot">&lt;-</span> <span class="fu">read.csv</span>(<span class="st">"flight_delay_clean.csv"</span>)</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>flightdf <span class="sc">%&gt;%</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(airline <span class="sc">%in%</span> <span class="fu">c</span>(<span class="st">"RegionEx"</span>, <span class="st">"MDA"</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(airline) <span class="sc">%&gt;%</span></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(</span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">n =</span> <span class="fu">n</span>(),</span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>    <span class="at">mean_delay =</span> <span class="fu">mean</span>(delay, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>    <span class="at">median_delay =</span> <span class="fu">median</span>(delay, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>    <span class="at">perc_90 =</span> <span class="fu">as.numeric</span>(<span class="fu">quantile</span>(delay, <span class="at">probs =</span> <span class="fl">0.90</span>, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)),</span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>    <span class="at">sd_delay =</span> <span class="fu">sd</span>(delay, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a>  )</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>      airline      departure_date       origin       destination 
- Length   :360   Length   :360    Length   :360   Length   :360  
- N.unique :  2   N.unique : 30    N.unique :  3   N.unique :  3  
- N.blank  :  0   N.blank  :  0    N.blank  :  0   N.blank  :  0  
- Min.nchar:  3   Min.nchar: 10    Min.nchar:  3   Min.nchar:  3  
- Max.nchar:  8   Max.nchar: 10    Max.nchar:  3   Max.nchar:  3  
-                                                                 
-     route_code  scheduled_departure scheduled_arrival   actual_arrival
- Length   :360   Length   :360       Length   :360     Length   :360   
- N.unique :  4   N.unique : 12       N.unique : 12     N.unique :200   
- N.blank  :  0   N.blank  :  0       N.blank  :  0     N.blank  :  0   
- Min.nchar:  7   Min.nchar:  8       Min.nchar:  8     Min.nchar:  8   
- Max.nchar:  7   Max.nchar:  8       Max.nchar:  8     Max.nchar:  8   
-                                                                       
- scheduled_flight_length actual_flight_length     delay        delay_indicator 
- Min.   : 70.00          Min.   : 59.00       Min.   :-13.00   Min.   :0.0000  
- 1st Qu.: 75.00          1st Qu.: 86.00       1st Qu.:  5.00   1st Qu.:0.0000  
- Median : 90.00          Median : 97.00       Median : 11.00   Median :0.0000  
- Mean   : 85.83          Mean   : 99.91       Mean   : 14.07   Mean   :0.2611  
- 3rd Qu.: 90.00          3rd Qu.:108.25       3rd Qu.: 15.00   3rd Qu.:1.0000  
- Max.   :100.00          Max.   :243.00       Max.   :153.00   Max.   :1.0000  
-  day_of_week 
- Min.   :1.0  
- 1st Qu.:2.0  
- Median :4.0  
- Mean   :3.9  
- 3rd Qu.:6.0  
- Max.   :7.0  </code></pre>
+<pre><code># A tibble: 2 × 6
+  airline      n mean_delay median_delay perc_90 sd_delay
+  &lt;chr&gt;    &lt;int&gt;      &lt;dbl&gt;        &lt;dbl&gt;   &lt;dbl&gt;    &lt;dbl&gt;
+1 MDA        120       10.9           13    16.1     6.34
+2 RegionEx   240       15.7            9    21      27.7 </code></pre>
 </div>
 </div>
+<p>Contractual obligations aside, which measure of central tendency would be most appropriate for comparing airline performance?</p>
+<p>According to the data, if only one measure can be used, the median is a better measure of central tendency. When looking at the mean vs median of the data for RegionEx its mean is significantly larger than the median. This means there is a few extream outliers that are increasing the average delay time. This can be further explained by including the 90th percentile and the standard deviation. With a very large standard deviation as shown in the RegionEx several outliers are causing a significant increase to the mean.</p>
 </section>
 <section id="q2" class="level2">
 <h2 class="anchored" data-anchor-id="q2">Q2</h2>
+<p>Inspect the distribution of RegionEx’s arrival delays by constructing a histogram of the number of arrival delay minutes of RegionEx’s flights. Do the same for MDA’s flights. Hint: use facet_wrap().</p>
+<p>How do these two distributions compare?</p>
 </section>
 <section id="q3" class="level2">
 <h2 class="anchored" data-anchor-id="q3">Q3</h2>
+<p>So far you have considered airline performance in terms of minutes delayed. However, the performance metrics, as noted in the case description, also include the percentage of delayed flights. Let’s verify that MDA’s COO is correct: does RegionEx have a higher percentage of delayed flights?</p>
+<p>Here is code to answer that question:</p>
 </section>
+<section id="create-a-summary-table-of-percent-delayed-by-airline." class="level1">
+<h1>Create a summary table of percent delayed by airline.</h1>
+<!-- d %>% 
+  group_by(airline) %>% 
+  summarize(n = n(),
+            percent_delay = (mean(delay_indicator) * 100) %>% round(1))  -->
+<p>Note that because delay_indicator is numeric (a binary 0/1 variable) calculating the mean of the vector returns the proportion of 1s, which, multiplied by 100, is equivalent to the percentage of delayed flights.</p>
+<p>Write your own code to create a table summarizing the percentage of delayed flights by airline and route.</p>
+<p>Notice that these tables—percent delayed by airline vs.&nbsp;percent delayed by airline and route— contain conflicting information. How should you answer the question of whether RegionEx has a higher percentage of delayed flights? Is the the COO correct? And, if not, why not?</p>
 <section id="q4" class="level2">
 <h2 class="anchored" data-anchor-id="q4">Q4</h2>
+<p>Compare the scheduled flight durations for the two airlines on each of their four routes. Also compare the actual flight durations for the two airlines. What do you notice? If the two airlines had the same scheduled duration, what impact would this have on their delay records?</p>
 </section>
 <section id="q5" class="level2">
 <h2 class="anchored" data-anchor-id="q5">Q5</h2>
+<p>Does the data support the claim that the on‐time performance of RegionEx is worse than that of MDA? Write a paragraph in which you argue a position. In your answer, please incorporate quantitative evidence from the earlier questions.</p>
+</section>
 </section>
 
 </main>

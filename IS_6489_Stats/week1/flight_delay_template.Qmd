@@ -7,26 +7,55 @@ format:
     toc: true
 ---
 ## R Packages
-```{r library}
+```{r libraries}
 library(tidyverse)
 ```
 
 ## Q1
-
+Compute the mean, median, 90th percentile, and standard deviation of arrival delay minutes for RegionEx flights. Do the same for MDA flights.
 ```{r, math_stuff}
-read.csv("flight_delay_clean.csv") -> df
-summary(df)
-```
+flightdf <- read.csv("flight_delay_clean.csv")
 
+flightdf %>%
+  filter(airline %in% c("RegionEx", "MDA")) %>%
+  group_by(airline) %>%
+  summarise(
+    n = n(),
+    mean_delay = mean(delay, na.rm = TRUE),
+    median_delay = median(delay, na.rm = TRUE),
+    perc_90 = as.numeric(quantile(delay, probs = 0.90, na.rm = TRUE)),
+    sd_delay = sd(delay, na.rm = TRUE)
+  )
+```
+Contractual obligations aside, which measure of central tendency would be most appropriate for comparing airline performance?
+
+According to the data, if only one measure can be used, the median is a better measure of central tendency. When looking at the mean vs median of the data for RegionEx its mean is significantly larger than the median. This means there is a few extream outliers that are increasing the average delay time. This can be further explained by including the 90th percentile and the standard deviation. With a very large standard deviation as shown in the RegionEx several outliers are causing a significant increase to the mean. 
 
 ## Q2
+Inspect the distribution of RegionEx’s arrival delays by constructing a histogram of the number of arrival delay minutes of RegionEx’s flights. Do the same for MDA’s flights. Hint: use facet_wrap().
 
+How do these two distributions compare?
 ```{r}
 
 ```
 
 
 ## Q3
+So far you have considered airline performance in terms of minutes delayed. However, the performance metrics, as noted in the case description, also include the percentage of delayed flights. Let’s verify that MDA’s COO is correct: does RegionEx have a higher percentage of delayed flights?
+
+Here is code to answer that question:
+
+# Create a summary table of percent delayed by airline.
+<!-- d %>% 
+  group_by(airline) %>% 
+  summarize(n = n(),
+            percent_delay = (mean(delay_indicator) * 100) %>% round(1))  -->
+Note that because delay_indicator is numeric (a binary 0/1 variable) calculating the mean of the vector returns the proportion of 1s, which, multiplied by 100, is equivalent to the percentage of delayed flights.
+
+Write your own code to create a table summarizing the percentage of delayed flights by airline and route.
+
+Notice that these tables—percent delayed by airline vs. percent delayed by airline and route— contain conflicting information. How should you answer the question of whether RegionEx has a higher percentage of delayed flights? Is the the COO correct? And, if not, why not?
+
 
 ```{r}
 
@@ -34,6 +63,8 @@ summary(df)
 
 
 ## Q4
+Compare the scheduled flight durations for the two airlines on each of their four routes. Also compare the actual flight durations for the two airlines. What do you notice? If the two airlines had the same scheduled duration, what impact would this have on their delay records?
+
 
 ```{r}
 
@@ -41,7 +72,7 @@ summary(df)
 
 
 ## Q5
-
+Does the data support the claim that the on‐time performance of RegionEx is worse than that of MDA? Write a paragraph in which you argue a position. In your answer, please incorporate quantitative evidence from the earlier questions.
 ```{r}
 
 ```
