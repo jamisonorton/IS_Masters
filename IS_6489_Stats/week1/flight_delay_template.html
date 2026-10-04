@@ -103,7 +103,11 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <li><a href="#q3" id="toc-q3" class="nav-link" data-scroll-target="#q3">Q3</a></li>
   <li><a href="#create-a-summary-table-of-percent-delayed-by-airline." id="toc-create-a-summary-table-of-percent-delayed-by-airline." class="nav-link" data-scroll-target="#create-a-summary-table-of-percent-delayed-by-airline.">Create a summary table of percent delayed by airline.</a>
   <ul class="collapse">
-  <li><a href="#q4" id="toc-q4" class="nav-link" data-scroll-target="#q4">Q4</a></li>
+  <li><a href="#notice-that-these-tablespercent-delayed-by-airline-vs.-percent-delayed-by-airline-and-route-contain-conflicting-information.-how-should-you-answer-the-question-of-whether-regionex-has-a-higher-percentage-of-delayed-flights-is-the-the-coo-correct-and-if-not-why-not" id="toc-notice-that-these-tablespercent-delayed-by-airline-vs.-percent-delayed-by-airline-and-route-contain-conflicting-information.-how-should-you-answer-the-question-of-whether-regionex-has-a-higher-percentage-of-delayed-flights-is-the-the-coo-correct-and-if-not-why-not" class="nav-link" data-scroll-target="#notice-that-these-tablespercent-delayed-by-airline-vs.-percent-delayed-by-airline-and-route-contain-conflicting-information.-how-should-you-answer-the-question-of-whether-regionex-has-a-higher-percentage-of-delayed-flights-is-the-the-coo-correct-and-if-not-why-not">Notice that these tables—percent delayed by airline vs.&nbsp;percent delayed by airline and route— contain conflicting information. How should you answer the question of whether RegionEx has a higher percentage of delayed flights? Is the the COO correct? And, if not, why not?</a></li>
+  <li><a href="#q4" id="toc-q4" class="nav-link" data-scroll-target="#q4">Q4</a>
+  <ul class="collapse">
+  <li><a href="#compare-the-scheduled-flight-durations-for-the-two-airlines-on-each-of-their-four-routes.-also-compare-the-actual-flight-durations-for-the-two-airlines.-what-do-you-notice-if-the-two-airlines-had-the-same-scheduled-duration-what-impact-would-this-have-on-their-delay-records" id="toc-compare-the-scheduled-flight-durations-for-the-two-airlines-on-each-of-their-four-routes.-also-compare-the-actual-flight-durations-for-the-two-airlines.-what-do-you-notice-if-the-two-airlines-had-the-same-scheduled-duration-what-impact-would-this-have-on-their-delay-records" class="nav-link" data-scroll-target="#compare-the-scheduled-flight-durations-for-the-two-airlines-on-each-of-their-four-routes.-also-compare-the-actual-flight-durations-for-the-two-airlines.-what-do-you-notice-if-the-two-airlines-had-the-same-scheduled-duration-what-impact-would-this-have-on-their-delay-records">Compare the scheduled flight durations for the two airlines on each of their four routes. Also compare the actual flight durations for the two airlines. What do you notice? If the two airlines had the same scheduled duration, what impact would this have on their delay records?</a></li>
+  </ul></li>
   <li><a href="#q5" id="toc-q5" class="nav-link" data-scroll-target="#q5">Q5</a></li>
   </ul></li>
   </ul>
@@ -198,10 +202,20 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <h3 class="anchored" data-anchor-id="inspect-the-distribution-of-regionexs-arrival-delays-by-constructing-a-histogram-of-the-number-of-arrival-delay-minutes-of-regionexs-flights.-do-the-same-for-mdas-flights.-hint-use-facet_wrap.">Inspect the distribution of RegionEx’s arrival delays by constructing a histogram of the number of arrival delay minutes of RegionEx’s flights. Do the same for MDA’s flights. Hint: use facet_wrap().</h3>
 <div class="cell">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>flightdf <span class="sc">%&gt;%</span></span>
-<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(airline <span class="sc">==</span> <span class="st">"RegionEx"</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>() <span class="sc">+</span></span>
-<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_histogram</span>(<span class="fu">aes</span>(<span class="at">x =</span> delay, <span class="at">color =</span> airline), <span class="at">binwidth =</span> <span class="dv">20</span>) <span class="sc">+</span></span>
-<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggtitle</span>(<span class="st">"Histogram of RegionEx's arrival delay minutes"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(airline <span class="sc">%in%</span> <span class="fu">c</span>(<span class="st">"RegionEx"</span>, <span class="st">"MDA"</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x =</span> delay)) <span class="sc">+</span></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_histogram</span>(</span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">aes</span>(<span class="at">fill =</span> airline),</span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">binwidth =</span> <span class="dv">10</span>,</span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">color =</span> <span class="st">"black"</span></span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">facet_wrap</span>(<span class="sc">~</span>airline, <span class="at">scales =</span> <span class="st">"free_x"</span>) <span class="sc">+</span></span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(</span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a>    <span class="at">title =</span> <span class="st">"Arrival Delay Distributions by Airline"</span>,</span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a>    <span class="at">x =</span> <span class="st">"Arrival delay minutes"</span>,</span>
+<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a>    <span class="at">y =</span> <span class="st">"Number of flights"</span></span>
+<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
+<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_minimal</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
@@ -209,22 +223,11 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </figure>
 </div>
 </div>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>flightdf <span class="sc">%&gt;%</span></span>
-<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(airline <span class="sc">==</span> <span class="st">"MDA"</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>() <span class="sc">+</span></span>
-<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_histogram</span>(<span class="fu">aes</span>(<span class="at">x =</span> delay, <span class="at">color =</span> airline), <span class="at">binwidth =</span> <span class="dv">20</span>) <span class="sc">+</span></span>
-<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggtitle</span>(<span class="st">"Histogram of MDA's arrival delay minutes"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<div class="cell-output-display">
-<div>
-<figure class="figure">
-<p><img src="flight_delay_template_files/figure-html/unnamed-chunk-1-2.png" class="img-fluid figure-img" width="672"></p>
-</figure>
-</div>
-</div>
 </div>
 </section>
 <section id="how-do-these-two-distributions-compare" class="level3">
 <h3 class="anchored" data-anchor-id="how-do-these-two-distributions-compare">How do these two distributions compare?</h3>
+<p>From the graphs when combining them and using a bin of 10 it looks that RegionEx is very heavily skewed right and that MDA is a normal distribution. It verifies that RegionEx has a few very high delays exceeding 130 minutes where as MDA doesn’t have any delays longer than 20 minutes.</p>
 </section>
 </section>
 <section id="q3" class="level2">
@@ -234,20 +237,149 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="create-a-summary-table-of-percent-delayed-by-airline." class="level1">
 <h1>Create a summary table of percent delayed by airline.</h1>
-<!-- d %>% 
-  group_by(airline) %>% 
-  summarize(n = n(),
-            percent_delay = (mean(delay_indicator) * 100) %>% round(1))  -->
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>flightdf <span class="sc">%&gt;%</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(airline) <span class="sc">%&gt;%</span></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarize</span>(<span class="at">n =</span> <span class="fu">n</span>(), <span class="at">percent_delay =</span> (<span class="fu">mean</span>(delay_indicator) <span class="sc">*</span> <span class="dv">100</span>) <span class="sc">%&gt;%</span> <span class="fu">round</span>(<span class="dv">2</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 2 × 3
+  airline      n percent_delay
+  &lt;chr&gt;    &lt;int&gt;         &lt;dbl&gt;
+1 MDA        120         25.83
+2 RegionEx   240         26.25</code></pre>
+</div>
+</div>
 <p>Note that because delay_indicator is numeric (a binary 0/1 variable) calculating the mean of the vector returns the proportion of 1s, which, multiplied by 100, is equivalent to the percentage of delayed flights.</p>
 <p>Write your own code to create a table summarizing the percentage of delayed flights by airline and route.</p>
-<p>Notice that these tables—percent delayed by airline vs.&nbsp;percent delayed by airline and route— contain conflicting information. How should you answer the question of whether RegionEx has a higher percentage of delayed flights? Is the the COO correct? And, if not, why not?</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>flightdf <span class="sc">%&gt;%</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(airline, route_code) <span class="sc">%&gt;%</span></span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(</span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">n =</span> <span class="fu">n</span>(),</span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">percent_delay =</span> <span class="fu">round</span>(<span class="fu">mean</span>(delay_indicator, <span class="at">na.rm =</span> <span class="cn">TRUE</span>) <span class="sc">*</span> <span class="dv">100</span>, <span class="dv">2</span>),</span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">.groups =</span> <span class="st">"drop"</span></span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(route_code, airline)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 8 × 4
+  airline  route_code     n percent_delay
+  &lt;chr&gt;    &lt;chr&gt;      &lt;int&gt;         &lt;dbl&gt;
+1 MDA      DFW/MSY       30         26.67
+2 RegionEx DFW/MSY       90         25.56
+3 MDA      MSY/DFW       30         30   
+4 RegionEx MSY/DFW       90         28.89
+5 MDA      MSY/PNS       30         20   
+6 RegionEx MSY/PNS       30         20   
+7 MDA      PNS/MSY       30         26.67
+8 RegionEx PNS/MSY       30         26.67</code></pre>
+</div>
+</div>
+<section id="notice-that-these-tablespercent-delayed-by-airline-vs.-percent-delayed-by-airline-and-route-contain-conflicting-information.-how-should-you-answer-the-question-of-whether-regionex-has-a-higher-percentage-of-delayed-flights-is-the-the-coo-correct-and-if-not-why-not" class="level3">
+<h3 class="anchored" data-anchor-id="notice-that-these-tablespercent-delayed-by-airline-vs.-percent-delayed-by-airline-and-route-contain-conflicting-information.-how-should-you-answer-the-question-of-whether-regionex-has-a-higher-percentage-of-delayed-flights-is-the-the-coo-correct-and-if-not-why-not">Notice that these tables—percent delayed by airline vs.&nbsp;percent delayed by airline and route— contain conflicting information. How should you answer the question of whether RegionEx has a higher percentage of delayed flights? Is the the COO correct? And, if not, why not?</h3>
+<p>After accounting for route, RegionEx has a lower percentage of delayed flights than MDA on every comparable route. Therefore, although RegionEx may have a higher overall delay percentage, that aggregate result is likely driven by the airlines’ different route distributions. The COO’s claim is misleading because a fair comparison should control for route.</p>
+</section>
 <section id="q4" class="level2">
 <h2 class="anchored" data-anchor-id="q4">Q4</h2>
-<p>Compare the scheduled flight durations for the two airlines on each of their four routes. Also compare the actual flight durations for the two airlines. What do you notice? If the two airlines had the same scheduled duration, what impact would this have on their delay records?</p>
+<section id="compare-the-scheduled-flight-durations-for-the-two-airlines-on-each-of-their-four-routes.-also-compare-the-actual-flight-durations-for-the-two-airlines.-what-do-you-notice-if-the-two-airlines-had-the-same-scheduled-duration-what-impact-would-this-have-on-their-delay-records" class="level3">
+<h3 class="anchored" data-anchor-id="compare-the-scheduled-flight-durations-for-the-two-airlines-on-each-of-their-four-routes.-also-compare-the-actual-flight-durations-for-the-two-airlines.-what-do-you-notice-if-the-two-airlines-had-the-same-scheduled-duration-what-impact-would-this-have-on-their-delay-records">Compare the scheduled flight durations for the two airlines on each of their four routes. Also compare the actual flight durations for the two airlines. What do you notice? If the two airlines had the same scheduled duration, what impact would this have on their delay records?</h3>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>flightdf <span class="sc">%&gt;%</span></span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(route_code, airline) <span class="sc">%&gt;%</span></span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(</span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">scheduled_minutes =</span> <span class="fu">first</span>(scheduled_flight_length),</span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">mean_actual_minutes =</span> <span class="fu">mean</span>(actual_flight_length, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">mean_over_schedule =</span> <span class="fu">mean</span>(</span>
+<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a>      actual_flight_length <span class="sc">-</span> scheduled_flight_length,</span>
+<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a>      <span class="at">na.rm =</span> <span class="cn">TRUE</span></span>
+<span id="cb11-9"><a href="#cb11-9" aria-hidden="true" tabindex="-1"></a>    ),</span>
+<span id="cb11-10"><a href="#cb11-10" aria-hidden="true" tabindex="-1"></a>    <span class="at">.groups =</span> <span class="st">"drop"</span></span>
+<span id="cb11-11"><a href="#cb11-11" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
+<span id="cb11-12"><a href="#cb11-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(route_code, airline)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 8 × 5
+  route_code airline  scheduled_minutes mean_actual_minutes mean_over_schedule
+  &lt;chr&gt;      &lt;chr&gt;                &lt;int&gt;               &lt;dbl&gt;              &lt;dbl&gt;
+1 DFW/MSY    MDA                    100             113.47             13.467 
+2 DFW/MSY    RegionEx                90             106.42             16.422 
+3 MSY/DFW    MDA                    100             113.5              13.5   
+4 MSY/DFW    RegionEx                90             108.21             18.211 
+5 MSY/PNS    MDA                     75              85.2              10.2   
+6 MSY/PNS    RegionEx                70              81                11     
+7 PNS/MSY    MDA                     75              81.433             6.4333
+8 PNS/MSY    RegionEx                70              80.4              10.4   </code></pre>
+</div>
+</div>
+<p>RegionEx has shorter scheduled flight durations than MDA on each route. Because RegionEx allows less time in its schedule, the same actual flight duration or operational delay may result in a larger arrival delay relative to its schedule. If both airlines used the same scheduled durations, some of RegionEx’s recorded delays might be reduced or eliminated, making the airlines’ delay records more comparable.</p>
+</section>
 </section>
 <section id="q5" class="level2">
 <h2 class="anchored" data-anchor-id="q5">Q5</h2>
 <p>Does the data support the claim that the on‐time performance of RegionEx is worse than that of MDA? Write a paragraph in which you argue a position. In your answer, please incorporate quantitative evidence from the earlier questions.</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>mda_schedule <span class="ot">&lt;-</span> flightdf <span class="sc">%&gt;%</span></span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(airline <span class="sc">==</span> <span class="st">"MDA"</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(route_code) <span class="sc">%&gt;%</span></span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(</span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">mda_scheduled_minutes =</span> <span class="fu">first</span>(scheduled_flight_length),</span>
+<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">.groups =</span> <span class="st">"drop"</span></span>
+<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-9"><a href="#cb13-9" aria-hidden="true" tabindex="-1"></a>flightdf <span class="sc">%&gt;%</span></span>
+<span id="cb13-10"><a href="#cb13-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">left_join</span>(mda_schedule, <span class="at">by =</span> <span class="st">"route_code"</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb13-11"><a href="#cb13-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(</span>
+<span id="cb13-12"><a href="#cb13-12" aria-hidden="true" tabindex="-1"></a>    airline <span class="sc">==</span> <span class="st">"MDA"</span> <span class="sc">|</span></span>
+<span id="cb13-13"><a href="#cb13-13" aria-hidden="true" tabindex="-1"></a>      (airline <span class="sc">==</span> <span class="st">"RegionEx"</span> <span class="sc">&amp;</span></span>
+<span id="cb13-14"><a href="#cb13-14" aria-hidden="true" tabindex="-1"></a>        actual_flight_length <span class="sc">&gt;=</span> mda_scheduled_minutes)</span>
+<span id="cb13-15"><a href="#cb13-15" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
+<span id="cb13-16"><a href="#cb13-16" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(airline) <span class="sc">%&gt;%</span></span>
+<span id="cb13-17"><a href="#cb13-17" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(</span>
+<span id="cb13-18"><a href="#cb13-18" aria-hidden="true" tabindex="-1"></a>    <span class="at">mean_over_scheduled =</span> <span class="fu">round</span>(</span>
+<span id="cb13-19"><a href="#cb13-19" aria-hidden="true" tabindex="-1"></a>      <span class="fu">mean</span>(actual_flight_length <span class="sc">-</span> scheduled_flight_length, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb13-20"><a href="#cb13-20" aria-hidden="true" tabindex="-1"></a>      <span class="dv">2</span></span>
+<span id="cb13-21"><a href="#cb13-21" aria-hidden="true" tabindex="-1"></a>    ),</span>
+<span id="cb13-22"><a href="#cb13-22" aria-hidden="true" tabindex="-1"></a>    <span class="at">n =</span> <span class="fu">n</span>(),</span>
+<span id="cb13-23"><a href="#cb13-23" aria-hidden="true" tabindex="-1"></a>    <span class="at">.groups =</span> <span class="st">"drop"</span></span>
+<span id="cb13-24"><a href="#cb13-24" aria-hidden="true" tabindex="-1"></a>  )</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 2 × 3
+  airline  mean_over_scheduled     n
+  &lt;chr&gt;                  &lt;dbl&gt; &lt;int&gt;
+1 MDA                    10.9    120
+2 RegionEx               25.64   132</code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb15"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>regionex_schedule <span class="ot">&lt;-</span> flightdf <span class="sc">%&gt;%</span></span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(airline <span class="sc">==</span> <span class="st">"RegionEx"</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(route_code) <span class="sc">%&gt;%</span></span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(</span>
+<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">regionex_scheduled_minutes =</span> <span class="fu">first</span>(scheduled_flight_length),</span>
+<span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">.groups =</span> <span class="st">"drop"</span></span>
+<span id="cb15-7"><a href="#cb15-7" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb15-8"><a href="#cb15-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-9"><a href="#cb15-9" aria-hidden="true" tabindex="-1"></a>flightdf <span class="sc">%&gt;%</span></span>
+<span id="cb15-10"><a href="#cb15-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">left_join</span>(regionex_schedule, <span class="at">by =</span> <span class="st">"route_code"</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb15-11"><a href="#cb15-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(</span>
+<span id="cb15-12"><a href="#cb15-12" aria-hidden="true" tabindex="-1"></a>    airline <span class="sc">==</span> <span class="st">"RegionEx"</span> <span class="sc">|</span></span>
+<span id="cb15-13"><a href="#cb15-13" aria-hidden="true" tabindex="-1"></a>      (airline <span class="sc">==</span> <span class="st">"MDA"</span> <span class="sc">&amp;</span></span>
+<span id="cb15-14"><a href="#cb15-14" aria-hidden="true" tabindex="-1"></a>        actual_flight_length <span class="sc">&gt;=</span> regionex_scheduled_minutes)</span>
+<span id="cb15-15"><a href="#cb15-15" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
+<span id="cb15-16"><a href="#cb15-16" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(airline) <span class="sc">%&gt;%</span></span>
+<span id="cb15-17"><a href="#cb15-17" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(</span>
+<span id="cb15-18"><a href="#cb15-18" aria-hidden="true" tabindex="-1"></a>    <span class="at">mean_over_regionex_schedule =</span> <span class="fu">round</span>(</span>
+<span id="cb15-19"><a href="#cb15-19" aria-hidden="true" tabindex="-1"></a>      <span class="fu">mean</span>(actual_flight_length <span class="sc">-</span> regionex_scheduled_minutes, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb15-20"><a href="#cb15-20" aria-hidden="true" tabindex="-1"></a>      <span class="dv">2</span></span>
+<span id="cb15-21"><a href="#cb15-21" aria-hidden="true" tabindex="-1"></a>    ),</span>
+<span id="cb15-22"><a href="#cb15-22" aria-hidden="true" tabindex="-1"></a>    <span class="at">n =</span> <span class="fu">n</span>(),</span>
+<span id="cb15-23"><a href="#cb15-23" aria-hidden="true" tabindex="-1"></a>    <span class="at">.groups =</span> <span class="st">"drop"</span></span>
+<span id="cb15-24"><a href="#cb15-24" aria-hidden="true" tabindex="-1"></a>  )</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 2 × 3
+  airline  mean_over_regionex_schedule     n
+  &lt;chr&gt;                          &lt;dbl&gt; &lt;int&gt;
+1 MDA                            18.8    118
+2 RegionEx                       15.66   240</code></pre>
+</div>
+</div>
+<p>The data support the claim that RegionEx has worse on-time performance when performance is measured by the average severity of delays. RegionEx’s overall mean arrival delay is 15.66 minutes, compared with 10.90 minutes for MDA, a difference of 4.76 minutes. RegionEx’s delays are also more heavily right-skewed, with some delays exceeding 130 minutes, while MDA’s delays do not exceed 20 minutes. However, RegionEx has a lower median delay and a lower percentage of delayed flights on each comparable route, suggesting that RegionEx flights are delayed less often but more severely when delays occur. RegionEx also uses shorter scheduled durations, which may contribute to its larger recorded delays. Therefore, RegionEx appears to perform worse in terms of average delay minutes, but not necessarily in terms of how frequently flights are delayed. The filtered schedule comparisons support this conclusion, but they should be interpreted cautiously because they do not include the same flights for both airlines.</p>
 </section>
 </section>
 
