@@ -60,7 +60,7 @@ So far you have considered airline performance in terms of minutes delayed. Howe
 
 Here is code to answer that question:
 
-# Create a summary table of percent delayed by airline.
+### Create a summary table of percent delayed by airline.
 ```{r percent-delay-flight}
 flightdf %>%
   group_by(airline) %>%
@@ -104,7 +104,7 @@ flightdf %>%
 RegionEx has shorter scheduled flight durations than MDA on each route. Because RegionEx allows less time in its schedule, the same actual flight duration or operational delay may result in a larger arrival delay relative to its schedule. If both airlines used the same scheduled durations, some of RegionEx’s recorded delays might be reduced or eliminated, making the airlines’ delay records more comparable.
 
 ## Q5
-Does the data support the claim that the on‐time performance of RegionEx is worse than that of MDA? Write a paragraph in which you argue a position. In your answer, please incorporate quantitative evidence from the earlier questions.
+### Does the data support the claim that the on‐time performance of RegionEx is worse than that of MDA? Write a paragraph in which you argue a position. In your answer, please incorporate quantitative evidence from the earlier questions.
 ```{r}
 mda_schedule <- flightdf %>%
   filter(airline == "MDA") %>%

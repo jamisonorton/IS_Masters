@@ -100,15 +100,18 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <li><a href="#inspect-the-distribution-of-regionexs-arrival-delays-by-constructing-a-histogram-of-the-number-of-arrival-delay-minutes-of-regionexs-flights.-do-the-same-for-mdas-flights.-hint-use-facet_wrap." id="toc-inspect-the-distribution-of-regionexs-arrival-delays-by-constructing-a-histogram-of-the-number-of-arrival-delay-minutes-of-regionexs-flights.-do-the-same-for-mdas-flights.-hint-use-facet_wrap." class="nav-link" data-scroll-target="#inspect-the-distribution-of-regionexs-arrival-delays-by-constructing-a-histogram-of-the-number-of-arrival-delay-minutes-of-regionexs-flights.-do-the-same-for-mdas-flights.-hint-use-facet_wrap.">Inspect the distribution of RegionEx’s arrival delays by constructing a histogram of the number of arrival delay minutes of RegionEx’s flights. Do the same for MDA’s flights. Hint: use facet_wrap().</a></li>
   <li><a href="#how-do-these-two-distributions-compare" id="toc-how-do-these-two-distributions-compare" class="nav-link" data-scroll-target="#how-do-these-two-distributions-compare">How do these two distributions compare?</a></li>
   </ul></li>
-  <li><a href="#q3" id="toc-q3" class="nav-link" data-scroll-target="#q3">Q3</a></li>
-  <li><a href="#create-a-summary-table-of-percent-delayed-by-airline." id="toc-create-a-summary-table-of-percent-delayed-by-airline." class="nav-link" data-scroll-target="#create-a-summary-table-of-percent-delayed-by-airline.">Create a summary table of percent delayed by airline.</a>
+  <li><a href="#q3" id="toc-q3" class="nav-link" data-scroll-target="#q3">Q3</a>
   <ul class="collapse">
+  <li><a href="#create-a-summary-table-of-percent-delayed-by-airline." id="toc-create-a-summary-table-of-percent-delayed-by-airline." class="nav-link" data-scroll-target="#create-a-summary-table-of-percent-delayed-by-airline.">Create a summary table of percent delayed by airline.</a></li>
   <li><a href="#notice-that-these-tablespercent-delayed-by-airline-vs.-percent-delayed-by-airline-and-route-contain-conflicting-information.-how-should-you-answer-the-question-of-whether-regionex-has-a-higher-percentage-of-delayed-flights-is-the-the-coo-correct-and-if-not-why-not" id="toc-notice-that-these-tablespercent-delayed-by-airline-vs.-percent-delayed-by-airline-and-route-contain-conflicting-information.-how-should-you-answer-the-question-of-whether-regionex-has-a-higher-percentage-of-delayed-flights-is-the-the-coo-correct-and-if-not-why-not" class="nav-link" data-scroll-target="#notice-that-these-tablespercent-delayed-by-airline-vs.-percent-delayed-by-airline-and-route-contain-conflicting-information.-how-should-you-answer-the-question-of-whether-regionex-has-a-higher-percentage-of-delayed-flights-is-the-the-coo-correct-and-if-not-why-not">Notice that these tables—percent delayed by airline vs.&nbsp;percent delayed by airline and route— contain conflicting information. How should you answer the question of whether RegionEx has a higher percentage of delayed flights? Is the the COO correct? And, if not, why not?</a></li>
+  </ul></li>
   <li><a href="#q4" id="toc-q4" class="nav-link" data-scroll-target="#q4">Q4</a>
   <ul class="collapse">
   <li><a href="#compare-the-scheduled-flight-durations-for-the-two-airlines-on-each-of-their-four-routes.-also-compare-the-actual-flight-durations-for-the-two-airlines.-what-do-you-notice-if-the-two-airlines-had-the-same-scheduled-duration-what-impact-would-this-have-on-their-delay-records" id="toc-compare-the-scheduled-flight-durations-for-the-two-airlines-on-each-of-their-four-routes.-also-compare-the-actual-flight-durations-for-the-two-airlines.-what-do-you-notice-if-the-two-airlines-had-the-same-scheduled-duration-what-impact-would-this-have-on-their-delay-records" class="nav-link" data-scroll-target="#compare-the-scheduled-flight-durations-for-the-two-airlines-on-each-of-their-four-routes.-also-compare-the-actual-flight-durations-for-the-two-airlines.-what-do-you-notice-if-the-two-airlines-had-the-same-scheduled-duration-what-impact-would-this-have-on-their-delay-records">Compare the scheduled flight durations for the two airlines on each of their four routes. Also compare the actual flight durations for the two airlines. What do you notice? If the two airlines had the same scheduled duration, what impact would this have on their delay records?</a></li>
   </ul></li>
-  <li><a href="#q5" id="toc-q5" class="nav-link" data-scroll-target="#q5">Q5</a></li>
+  <li><a href="#q5" id="toc-q5" class="nav-link" data-scroll-target="#q5">Q5</a>
+  <ul class="collapse">
+  <li><a href="#does-the-data-support-the-claim-that-the-ontime-performance-of-regionex-is-worse-than-that-of-mda-write-a-paragraph-in-which-you-argue-a-position.-in-your-answer-please-incorporate-quantitative-evidence-from-the-earlier-questions." id="toc-does-the-data-support-the-claim-that-the-ontime-performance-of-regionex-is-worse-than-that-of-mda-write-a-paragraph-in-which-you-argue-a-position.-in-your-answer-please-incorporate-quantitative-evidence-from-the-earlier-questions." class="nav-link" data-scroll-target="#does-the-data-support-the-claim-that-the-ontime-performance-of-regionex-is-worse-than-that-of-mda-write-a-paragraph-in-which-you-argue-a-position.-in-your-answer-please-incorporate-quantitative-evidence-from-the-earlier-questions.">Does the data support the claim that the on‐time performance of RegionEx is worse than that of MDA? Write a paragraph in which you argue a position. In your answer, please incorporate quantitative evidence from the earlier questions.</a></li>
   </ul></li>
   </ul>
 </nav>
@@ -234,9 +237,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <h2 class="anchored" data-anchor-id="q3">Q3</h2>
 <p>So far you have considered airline performance in terms of minutes delayed. However, the performance metrics, as noted in the case description, also include the percentage of delayed flights. Let’s verify that MDA’s COO is correct: does RegionEx have a higher percentage of delayed flights?</p>
 <p>Here is code to answer that question:</p>
-</section>
-<section id="create-a-summary-table-of-percent-delayed-by-airline." class="level1">
-<h1>Create a summary table of percent delayed by airline.</h1>
+<section id="create-a-summary-table-of-percent-delayed-by-airline." class="level3">
+<h3 class="anchored" data-anchor-id="create-a-summary-table-of-percent-delayed-by-airline.">Create a summary table of percent delayed by airline.</h3>
 <div class="cell">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>flightdf <span class="sc">%&gt;%</span></span>
 <span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(airline) <span class="sc">%&gt;%</span></span>
@@ -274,9 +276,11 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 8 RegionEx PNS/MSY       30         26.67</code></pre>
 </div>
 </div>
+</section>
 <section id="notice-that-these-tablespercent-delayed-by-airline-vs.-percent-delayed-by-airline-and-route-contain-conflicting-information.-how-should-you-answer-the-question-of-whether-regionex-has-a-higher-percentage-of-delayed-flights-is-the-the-coo-correct-and-if-not-why-not" class="level3">
 <h3 class="anchored" data-anchor-id="notice-that-these-tablespercent-delayed-by-airline-vs.-percent-delayed-by-airline-and-route-contain-conflicting-information.-how-should-you-answer-the-question-of-whether-regionex-has-a-higher-percentage-of-delayed-flights-is-the-the-coo-correct-and-if-not-why-not">Notice that these tables—percent delayed by airline vs.&nbsp;percent delayed by airline and route— contain conflicting information. How should you answer the question of whether RegionEx has a higher percentage of delayed flights? Is the the COO correct? And, if not, why not?</h3>
 <p>After accounting for route, RegionEx has a lower percentage of delayed flights than MDA on every comparable route. Therefore, although RegionEx may have a higher overall delay percentage, that aggregate result is likely driven by the airlines’ different route distributions. The COO’s claim is misleading because a fair comparison should control for route.</p>
+</section>
 </section>
 <section id="q4" class="level2">
 <h2 class="anchored" data-anchor-id="q4">Q4</h2>
@@ -314,7 +318,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="q5" class="level2">
 <h2 class="anchored" data-anchor-id="q5">Q5</h2>
-<p>Does the data support the claim that the on‐time performance of RegionEx is worse than that of MDA? Write a paragraph in which you argue a position. In your answer, please incorporate quantitative evidence from the earlier questions.</p>
+<section id="does-the-data-support-the-claim-that-the-ontime-performance-of-regionex-is-worse-than-that-of-mda-write-a-paragraph-in-which-you-argue-a-position.-in-your-answer-please-incorporate-quantitative-evidence-from-the-earlier-questions." class="level3">
+<h3 class="anchored" data-anchor-id="does-the-data-support-the-claim-that-the-ontime-performance-of-regionex-is-worse-than-that-of-mda-write-a-paragraph-in-which-you-argue-a-position.-in-your-answer-please-incorporate-quantitative-evidence-from-the-earlier-questions.">Does the data support the claim that the on‐time performance of RegionEx is worse than that of MDA? Write a paragraph in which you argue a position. In your answer, please incorporate quantitative evidence from the earlier questions.</h3>
 <div class="cell">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>mda_schedule <span class="ot">&lt;-</span> flightdf <span class="sc">%&gt;%</span></span>
 <span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(airline <span class="sc">==</span> <span class="st">"MDA"</span>) <span class="sc">%&gt;%</span></span>
