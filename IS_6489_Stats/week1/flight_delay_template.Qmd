@@ -5,6 +5,7 @@ date: "October 2, 2026"
 format:
   html:
     toc: true
+    embed-resources: true
 ---
 ## R Packages
 ```{r libraries}
