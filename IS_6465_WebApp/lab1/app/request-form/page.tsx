@@ -5,12 +5,10 @@ export const metadata: Metadata = {
   title: "Request Form",
 };
 
-const Request = () => {
+export default function Request() {
   return (
     <div>
       <RequestForm />
     </div>
   );
-};
-
-export default Request;
+}

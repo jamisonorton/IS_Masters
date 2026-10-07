@@ -1,5 +1,3 @@
-const TutorsTable = () => {
+export default function TutorsTable() {
   return <div>TutorsTable</div>;
-};
-
-export default TutorsTable;
+}

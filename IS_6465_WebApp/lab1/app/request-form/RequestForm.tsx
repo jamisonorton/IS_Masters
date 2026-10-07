@@ -22,7 +22,7 @@ import {
 } from "@/components/ui/popover";
 import { Calendar as CalendarIcon } from "lucide-react";
 
-const RequestForm = () => {
+export default function RequestForm() {
   const [date, setDate] = React.useState<Date | undefined>();
 
   useEffect(() => {
@@ -30,6 +30,7 @@ const RequestForm = () => {
       setDate(new Date());
     });
   }, []);
+
   return (
     <div className="min-h-screen bg-linear-to-br from-slate-50 via-white to-blue-50 px-6 py-16">
       <div className="mx-auto flex max-w-6xl items-center justify-center">
@@ -104,6 +105,4 @@ const RequestForm = () => {
       </div>
     </div>
   );
-};
-
-export default RequestForm;
+}
