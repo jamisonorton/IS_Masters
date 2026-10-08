@@ -1,10 +1,11 @@
 "use client";
 import { useEffect, useState } from "react";
 import { format } from "date-fns";
-import {
-  getAvailableTutors,
-  type AvailableTutor,
-} from "@/lib/available-tutors";
+import type { AvailableTutor } from "@/lib/available-tutors";
+
+type RequestFormProps = {
+  availableTutors: AvailableTutor[];
+};
 
 import { Button } from "@/components/ui/button";
 import {
@@ -26,9 +27,7 @@ import {
 } from "@/components/ui/popover";
 import { Calendar as CalendarIcon } from "lucide-react";
 
-const availableTutors = getAvailableTutors();
-
-export default function RequestForm() {
+export default function RequestForm({ availableTutors }: RequestFormProps) {
   const [date, setDate] = useState<Date | undefined>();
   const [open, setOpen] = useState(false);
   const [selectedTutor, setSelectedTutor] = useState<AvailableTutor | null>(

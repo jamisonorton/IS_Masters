@@ -1,14 +1,18 @@
-import { Metadata } from "next";
+import type { Metadata } from "next";
 import RequestForm from "./RequestForm";
+import { getAvailableTutors } from "@/lib/available-tutors";
 
 export const metadata: Metadata = {
-  title: "Request Form",
+  title: "Request a Tutoring Session",
+  description: "Request a tutoring session with an available peer tutor.",
 };
 
 export default function Request() {
+  const availableTutors = getAvailableTutors();
+
   return (
-    <div>
-      <RequestForm />
-    </div>
+    <main>
+      <RequestForm availableTutors={availableTutors} />
+    </main>
   );
 }
