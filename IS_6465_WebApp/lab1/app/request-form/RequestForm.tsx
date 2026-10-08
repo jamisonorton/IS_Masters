@@ -1,6 +1,10 @@
 "use client";
-import React, { startTransition, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { format } from "date-fns";
+import {
+  getAvailableTutors,
+  type AvailableTutor,
+} from "@/lib/available-tutors";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -22,13 +26,17 @@ import {
 } from "@/components/ui/popover";
 import { Calendar as CalendarIcon } from "lucide-react";
 
+const availableTutors = getAvailableTutors();
+
 export default function RequestForm() {
-  const [date, setDate] = React.useState<Date | undefined>();
+  const [date, setDate] = useState<Date | undefined>();
+  const [open, setOpen] = useState(false);
+  const [selectedTutor, setSelectedTutor] = useState<AvailableTutor | null>(
+    null,
+  );
 
   useEffect(() => {
-    startTransition(() => {
-      setDate(new Date());
-    });
+    setDate(new Date());
   }, []);
 
   return (
@@ -72,17 +80,17 @@ export default function RequestForm() {
             <div className="space-y-2">
               <p className="text-sm font-medium text-slate-700">Tutor</p>
 
-              <Popover>
+              <Popover open={open} onOpenChange={setOpen}>
                 <PopoverTrigger
                   render={
                     <Button
                       variant="outline"
                       className="w-full justify-between font-normal"
-                    />
+                    >
+                      {selectedTutor?.name ?? "Select a tutor"}
+                    </Button>
                   }
-                >
-                  Select a tutor
-                </PopoverTrigger>
+                />
 
                 <PopoverContent className="w-80">
                   <PopoverHeader>
@@ -91,6 +99,26 @@ export default function RequestForm() {
                       Choose from the currently available tutors.
                     </PopoverDescription>
                   </PopoverHeader>
+
+                  <ul className="mt-4 space-y-1">
+                    {availableTutors.map((tutor) => (
+                      <li key={tutor.name}>
+                        <button
+                          type="button"
+                          className="w-full rounded-md px-3 py-2 text-left hover:bg-slate-100"
+                          onClick={() => {
+                            setSelectedTutor(tutor);
+                            setOpen(false);
+                          }}
+                        >
+                          <div className="font-medium">{tutor.name}</div>
+                          <div className="text-sm text-slate-500">
+                            {tutor.className}
+                          </div>
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
                 </PopoverContent>
               </Popover>
             </div>
