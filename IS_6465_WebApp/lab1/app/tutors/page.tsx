@@ -15,12 +15,16 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { Pool } from "pg";
 
 export const metadata: Metadata = {
   title: "Tutors",
 };
 
-export default function tutors() {
+export default async function tutors() {
+  const res = await Pool.query
+  const data = await res.json();
+
   return (
     <div className="min-h-screen bg-linear-to-br from-slate-50 to-slate-100 px-4 py-12">
       <Card className="mx-auto w-full max-w-3xl overflow-hidden rounded-2xl border-slate-200 bg-white shadow-xl">
@@ -54,7 +58,7 @@ export default function tutors() {
             <TableBody>
               <TableRow className="border-slate-200 transition-colors hover:bg-blue-50">
                 <TableCell className="px-6 py-4 font-medium text-slate-900">
-                  Maya
+                  {data.map(id: any)}
                 </TableCell>
                 <TableCell className="px-6 py-4 text-slate-600">
                   IS 6465
