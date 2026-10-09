@@ -1,0 +1,86 @@
+---
+title: "Conley Fisheries Case"
+author: "Jamison Orton"
+date: "October 9, 2026"
+format:
+  html:
+    toc: true
+    embed-resources: true
+---
+
+## R Packages
+
+```{r libraries}
+library(tidyverse)
+options(pillar.sigfig = 5)
+```
+
+Your goal in this project is to:
+
+Fill in the following dataset with random numbers drawn from the probability distributions defined in the case description—distributions for demand, quantity and price. \# Define n n \<- 1000
+
+# Empty data frame for 1000 simulated days
+
+data \<- data.frame(day = seq(1:n), demand = NA, \# demand in Rockport quantity = NA, \# quantity sold price = NA, \# price per pound cost = 10000, \# cost of daily operations earnings = NA) Use those numbers to simulate earnings.
+
+Summarize the simulated earnings distribution at Rockport (questions 1 - 4) and inform a business recommendation (question 5).
+
+Note:
+
+Quantity sold is a function of demand: if demand is greater than 3500 then quantity is 3500, otherwise it equals demand. The mathematical notation used for this relationship in the case description—min(3500, D)—is NOT R code. There are various ways of creating the quantity variable based on demand but ifelse() works well.
+
+Use set.seed(123) once before doing any simulation. Why 123? This is an arbitrary seed that controls a random process, making the results comparable.
+
+Mr. Conley has 50 boats, but we will be modeling earnings per boat. (It would be simple enough to multiply your per boat results by 50 to get earnings for the fleet.)
+
+Questions Lightly comment your code and use pipes for readability.
+
+Most of the questions require some writing.
+
+## Q1
+
+Plot simulated earnings at Rockport.
+
+## Q2
+
+Earnings at Gloucester are fixed at \$1375 (\$3.25 x 3500 - \$10,000). What is P(F \> 1375) at Rockport? Write down the answer.
+
+## Q3
+
+What is the probability that Mr. Conley will lose money? We can express this as P(F \< 0). Write down the answer.
+
+## Q4
+
+What is the mean of F? Write down the answer.
+
+## Q5
+
+What is your advice to Mr. Conley? Write one paragraph in which you argue a position. In your answer please incorporate the quantitative details from your simulation, and consider in particular the trade-off between risk and reward.
+
+## Challenge Question 1
+
+This question is optional and not graded!
+
+The cod population off the coast of New England has been declining for decades (down 95% in the early 90s) due to overfishing and destructive fishing practices, such as bottom trawling. Most recently, a 10-year rebuilding plan was implemented for this stock in 2014, which is now managed under the Northeast Multispecies (Groundfish) Fishery Management Plan. The catch has been restricted as follows:
+
+Limitations on net type. Restrictions on fish size (over 19 inches). Restrictions on size of catch (200 lbs/boat north of Cape Cod). Restrictions on fishing season (no fishing during the winter conservancy period, Nov 15 - Jan 31, or during the spring conservancy period, Apr 16 - July 21). While Clint Conley supports these measures, which he understands as necessary to create a sustainable cod fishery, they had devastating impacts on his business. Particularly in the area north of Cape Cod, where Gloucester and Rockport are located, the catch was limited dramatically: 200 pounds per boat per day during the season.
+
+Cod prices have gone up dramatically. Gloucester is still a reliable market (he can always sell his limit, 200 lbs), but Conley is sometimes unable to sell at Rockport at all. When he can sell at Rockport, the prices are variable, but usually quite a bit higher than at Gloucester.
+
+Update your simulation with this new information:
+
+He has managed to reduce his cost per boat to \$2000.
+
+His fleet now consists in 10 boats.
+
+Prices (in dollars) at Gloucester are fixed:
+
+Winter/Spring fishing season (Feb. 1 to April 15): 17. Summer/Fall fishing season (July 22 - Nov 15): 25. Prices (in dollars) at Rockport are normally distributed: 𝑁(𝜇,𝜎) .
+
+Winter/Spring fishing season (Feb. 1 to April 15): 𝑁(27,6) . Summer/Fall fishing season (July 22 - Nov 15): 𝑁(32,8) . Moreover, the probability mass function for demand at Rockport, in both selling seasons, based on recent data, is now as follows:
+
+data.frame(demand = c(0, 50, 100, 150, 200), probability = c(.02, .1, .3, .3, .28)) \## demand probability \## 1 0 0.02 \## 2 50 0.10 \## 3 100 0.30 \## 4 150 0.30 \## 5 200 0.28 What is your recommendation to Mr. Conley based on your new simulation?
+
+## Challenge Question 2
+
+Write a practice question for the Probability and Simulation section of Learn R + Statistics. It should explore the content in one of the lessons and be modeled on this question, with both a hint and an answer.
