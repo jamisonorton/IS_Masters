@@ -1,0 +1,137 @@
+---
+title: "Velo.com - Linear Regression"
+author: "Jamison Orton"
+date: "October 24, 2026"
+format:
+  html:
+    toc: true
+    embed-resources: true
+---
+
+## R Packages and cleaning data
+```{r libraries}
+library(tidyverse)
+options(pillar.sigfig = 5)
+```
+
+```{r import-clean-data}
+velosales <- read.csv(
+  file = "velo.csv",
+  stringsAsFactors = FALSE,
+  fileEncoding = "latin1"
+)
+
+velosales %>% str()
+
+velosales <- velosales %>% mutate(across(where(is.character), as.factor))
+```
+
+## Q1
+### Plot the distribution of spent by checkout_system. Below you will use a t-test to compare these distributions statistically. However, a t-test assumes normally distributed data. In other words, it assumes that the mean is a good measure of central tendency for comparing the distributions. Do these assumptions seem valid in this case? Why or why not?
+
+```{r density-plot}
+ggplot(
+  velosales,
+  aes(x = spent, fill = checkout_system, color = checkout_system)
+) +
+  geom_density(alpha = 0.3) +
+  labs(
+    title = "Distribution of spending by checkout system",
+    x = "Amount spent",
+    y = "Density",
+    fill = "Checkout system",
+    color = "Checkout system"
+  ) +
+  theme_minimal()
+```
+
+Though this data is not normally distributed we can still use the t-test due to the large sample size of these tests according to the central limit theorem. So this assumption of normality is false but, we can still use the t-test.
+
+## Q2
+### Create a summary table of spent by checkout_system with the following statistics:
+
+<!-- n
+mean
+median
+standard deviation
+total (a sum of all spending)
+the lower bound of a 95% confidence interval for the mean
+the upper bound of a 95% confidence interval for the mean
+Your table should have 2 rows and 8 columns. -->
+```{r summary-checkout}
+spent_summary <- velosales %>%
+  group_by(checkout_system) %>%
+  summarise(
+    n = n(),
+    mean = mean(spent),
+    median = median(spent),
+    standard_deviation = sd(spent),
+    total = sum(spent),
+    lower_95 = mean(spent) - qt(0.975, df = n() - 1) * sd(spent) / sqrt(n()),
+    upper_95 = mean(spent) + qt(0.975, df = n() - 1) * sd(spent) / sqrt(n()),
+    .groups = "drop"
+  )
+
+spent_summary
+```
+
+
+## Q3
+### Is average spending significantly higher in the treatment group? (The treatment group consists in the customers using the new checkout system.) Answer this question using a 2 sample, 2-tailed t-test with alpha set at .05. (Note that these are the default settings for the t.test() function when vectors are supplied for the x and y arguments.)
+```{r t-test}
+t.test(
+  x = velosales$spent[velosales$checkout_system == "new"],
+  y = velosales$spent[velosales$checkout_system == "old"]
+)
+```
+The new checkout groups mean is higher by 62.74 but this is not statistically significant since the p-value is .1536 which is greater that .05. 
+
+## Q4
+### First, create another summary table of spent by checkout_system and device. Include these same statistics:
+
+<!-- n
+mean
+median
+standard deviation
+the lower bound of a 95% confidence interval for the mean
+the upper bound of a 95% confidence interval for the mean
+The table should have 4 rows and 8 columns. -->
+
+```{r summary-device,checkout}
+spent_summary <- velosales %>%
+  group_by(checkout_system, device) %>%
+  summarise(
+    n = n(),
+    mean = mean(spent),
+    median = median(spent),
+    standard_deviation = sd(spent),
+    lower_95 = mean(spent) - qt(0.975, df = n() - 1) * sd(spent) / sqrt(n()),
+    upper_95 = mean(spent) + qt(0.975, df = n() - 1) * sd(spent) / sqrt(n()),
+    .groups = "drop"
+  )
+
+spent_summary
+```
+
+<!-- Based on this information (as well as Sarah’s observation, noted in the case description, that the glitch in the checkout system seemed more prevalent for mobile users), an additional statistical comparison of new and old among just mobile users seems warranted. -->
+
+### Second, make the comparison using a 2 sample, 2-tailed t-test with alpha set at .05. Report your results. (Note that a t-test can only compare two groups. Therefore, you will need to subset the data before making the comparison.)
+```{r t-test-w/device}
+mobile_sales <- subset(velosales, device == "mobile")
+computer_sales <- subset(velosales, device == "computer")
+
+t.test(
+  x = mobile_sales$spent[mobile_sales$checkout_system == "new"],
+  y = mobile_sales$spent[mobile_sales$checkout_system == "old"]
+)
+t.test(
+  x = computer_sales$spent[computer_sales$checkout_system == "new"],
+  y = computer_sales$spent[computer_sales$checkout_system == "old"]
+)
+```
+When you subset to just mobile devices and perform another t-test the mean difference between the old and new system is $148.08 and the t-test has a p-value of 0.0165 thus rejecting the null hypothesis meaning the spending between the new and old system is statistically significant.
+
+## Q5
+### What course of action should Sarah recommend to the management at velo.com? Please incorporate your analytic results from above in fashioning an answer.
+
+Sarah should recommend moving to the new checkout system, while monitoring results by device after implementation. In the experiment, mobile customers spent about $148 more on average with the new system, a statistically significant difference (p = .0166). The difference for computer users was not statistically significant (p = .6497), and the overall difference was not significant (p = .1536). These results do not prove that the new system has no effect on computer users, but they provide evidence of a benefit for mobile customers. If mobile sales are expected to become a larger share of Velo’s business, that benefit could become increasingly valuable. Because switching costs are now negligible, adopting the system is reasonable; the development cost already incurred should not determine the decision.
