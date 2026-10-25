@@ -26,9 +26,6 @@ velo <- read.csv(
 ### Fit a simple linear regression with spent as the target variable and checkout_system as the predictor. Note that lm() will automatically assign alphabetic factor levels to character predictors. To make the regression coefficient for checkout_system easier to interpret in this tutorial we will manually change the factor levels. This will ensure that the coefficient is, appropriately, positive.
 
 ```{r}
-velo <- velo %>%
-  mutate(checkout_system = factor(checkout_system, levels = c("old", "new"))) # or
-
 velo$checkout_system <- factor(velo$checkout_system, levels = c("old", "new"))
 
 velo$checkout_system %>% str()
@@ -42,39 +39,44 @@ summary(velo_model)
 New System: $2279.89
 Old System: $2217.15
 ### 2) What is the difference in average customer spending between the new and old systems, and is the difference statistically significant at the p < .05 level?
-Customers using the new system spent an average of $62.74 more. p = .154 thus it is not statitically significant since it is greater than .05.
+Customers using the new system spent an average of $62.74 more. P = .154, so it is not statistically significant since it is greater than .05.
 ### 3) Compare these results to those you obtained using a t-test in the last module (see the above output).
 The average spending estimates are the same as in the t-test. The p-values are nearly identical (.154 for regression and .1536 for the Welch t-test), and both show that the difference is not statistically significant. The regression also reports the standard error of the estimated difference ($44.03) and a summary of the model residuals.
 
 ## Q2
 ### Fit a simple linear regression with spent as the target variable and checkout_system as the predictor, but include only customers who were using a mobile device. (Later you will learn how to fit this sort of regression using all the data, but for now subset the data to include only mobile users.) Answer these questions based on the model summary for this regression:
 
-```{r}
-23
+```{r mobile-filtered}
+velo_mobile <- velo %>%
+  filter(device == "mobile")
+
+mobile_model <- lm(spent ~ checkout_system, data = velo_mobile)
+summary(mobile_model)
 ```
-1) What is the difference in mobile customer spending between the new and old systems?
+### 1) What is the difference in mobile customer spending between the new and old systems?
+Mobile customers using the new system spent an average of $148.08 more than those using the old system ($2,323.00 vs. $2,174.92).
+### 2) Is the difference statistically significant at the p < .05 level?
+Yes. The p-value is .017 and the difference is statistically significant.
+### 3) Compare these results to those you obtained using a t-test in the last module (see the above output).
+The regression and Welch t-test give the same group means and the same conclusion. Their p-values are very close (.017 vs. .01655); the small difference is because the regression and Welch test use different variance assumptions. Both show a statistically significant difference.
 
-2) Is the difference statistically significant at the p < .05 level?
-
-3) Compare these results to those you obtained using a t-test in the last module (see the above output).
-
-### Remember that the syntax for creating a simple linear regression model in R has the form: lm(y ~ x, data). This code will produce estimates of the model intercept and coefficients which you can use to assemble the regression equation: y = intercept + coefficient * x. To get more information about the model (including standard errors and p-values) use the generic summary() function.
-
-```{r}
-
-```
 
 ## Q3
 ### Using the summary of the regression model object from Q2, calculate a 95% confidence interval (CI) for the checkout_system coefficient using 2 as the critical value. Interpret the CI: What does it mean exactly?
 
 ```{r}
-
+148.08 - 2 * 61.98
+148.08 + 2 * 61.98
 ```
+
+The approximate 95% CI is [$24.12, $272.04]. This means we are approximately 95% confident that mobile customers using the new checkout system spend, on average, between $24.12 and $272.04 more than those using the old system. Since the interval does not include $0, it supports a statistically significant difference at the .05 level.
 
 ## Q4
 ### Based on the model output in Q2, along with the 95% CI you calculated in Q3, develop best and worst case revenue projections for the new checkout system. What range of increased revenue might the company expect using the new checkout system (compared to the old system) and, based on this, does the coefficient estimate for checkout_system have practical significance in your view? (Hint: multiply the lower and upper bounds of the CI you calculated in Q3 by an arbitrary number of customers. That range, remember, is expressed in terms of average dollars per customer.)
-A 95% CI for a coefficient represents the most likely range of values under repeated sampling. Working with a range is advantageous. Velo.com executives might well be interested in the low end of the range in order to assess the financial risks associated with implementing the new system. Additionally, scaling up the average spending per customer gives you a way to convey the practical significance of using the new system.
-What do I mean by “scaling up”? For communication purposes it is often helpful to multiply averages, like the upper and lower bounds of the confidence interval, by some arbitrary scaling number (in this case, for example, 1000 or 5000 customers or whatever you think makes sense) so that a decision-maker can get a better sense of the overall impact to the business of a proposed change. Think back to the Conley Fisheries case where you calculated that the maximum daily loss per boat was $10,000. By itself, that may seem like a sustainable loss. But remember: there are 50 boats. So, really, to convey a complete sense of the risk, the maximum per boat daily loss must be scaled up — multiplied by — the number of boats in the fleet.
+
+### A 95% CI for a coefficient represents the most likely range of values under repeated sampling. Working with a range is advantageous. Velo.com executives might well be interested in the low end of the range in order to assess the financial risks associated with implementing the new system. Additionally, scaling up the average spending per customer gives you a way to convey the practical significance of using the new system.
+
+### What do I mean by “scaling up”? For communication purposes it is often helpful to multiply averages, like the upper and lower bounds of the confidence interval, by some arbitrary scaling number (in this case, for example, 1000 or 5000 customers or whatever you think makes sense) so that a decision-maker can get a better sense of the overall impact to the business of a proposed change. Think back to the Conley Fisheries case where you calculated that the maximum daily loss per boat was $10,000. By itself, that may seem like a sustainable loss. But remember: there are 50 boats. So, really, to convey a complete sense of the risk, the maximum per boat daily loss must be scaled up — multiplied by — the number of boats in the fleet.
 
 ```{r}
 
