@@ -15,15 +15,11 @@ options(pillar.sigfig = 5)
 ```
 
 ```{r import-clean-data}
-velosales <- read.csv(
+velo <- read.csv(
   file = "velo.csv",
   stringsAsFactors = FALSE,
   fileEncoding = "latin1"
 )
-
-velosales %>% str()
-
-velosales <- velosales %>% mutate(across(where(is.character), as.factor))
 ```
 
 ## Q1
@@ -34,19 +30,28 @@ velo <- velo %>%
   mutate(checkout_system = factor(checkout_system, levels = c("old", "new"))) # or
 
 velo$checkout_system <- factor(velo$checkout_system, levels = c("old", "new"))
+
+velo$checkout_system %>% str()
+
+velo_model <- lm(spent ~ checkout_system, data = velo)
+summary(velo_model)
 ```
 
 ### Based on the model summary, answer the following questions: 
-1) What is average spending for customers using 1) the new system and 2) the old system? This information can be extracted directly from the linear model output.
-
-2) What is the difference in average customer spending between the new and old systems, and is the difference statistically significant at the p < .05 level?
-
-3) Compare these results to those you obtained using a t-test in the last module (see the above output).
-
+### 1) What is average spending for customers using 1) the new system and 2) the old system? This information can be extracted directly from the linear model output.
+New System: $2279.89
+Old System: $2217.15
+### 2) What is the difference in average customer spending between the new and old systems, and is the difference statistically significant at the p < .05 level?
+Customers using the new system spent an average of $62.74 more. p = .154 thus it is not statitically significant since it is greater than .05.
+### 3) Compare these results to those you obtained using a t-test in the last module (see the above output).
+The average spending estimates are the same as in the t-test. The p-values are nearly identical (.154 for regression and .1536 for the Welch t-test), and both show that the difference is not statistically significant. The regression also reports the standard error of the estimated difference ($44.03) and a summary of the model residuals.
 
 ## Q2
 ### Fit a simple linear regression with spent as the target variable and checkout_system as the predictor, but include only customers who were using a mobile device. (Later you will learn how to fit this sort of regression using all the data, but for now subset the data to include only mobile users.) Answer these questions based on the model summary for this regression:
 
+```{r}
+23
+```
 1) What is the difference in mobile customer spending between the new and old systems?
 
 2) Is the difference statistically significant at the p < .05 level?
