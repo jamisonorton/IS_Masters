@@ -1,20 +1,30 @@
 ---
-title: "Velo.com - Linear Regression"
+title: "Velo.com: Linear Regression"
 author: "Jamison Orton"
 date: "October 24, 2026"
 format:
   html:
+    theme: cosmo
     toc: true
+    toc-depth: 2
+    code-fold: true
+    code-summary: "Show R code"
+    code-tools: true
     embed-resources: true
 ---
 
-## R Packages and cleaning data
-```{r libraries}
+## Setup
+
+### Load packages
+
+```{r}
 library(tidyverse)
 options(pillar.sigfig = 5)
 ```
 
-```{r import-clean-data}
+### Import the data
+
+```{r}
 velo <- read.csv(
   file = "velo.csv",
   stringsAsFactors = FALSE,
@@ -22,66 +32,108 @@ velo <- read.csv(
 )
 ```
 
-## Q1
-### Fit a simple linear regression with spent as the target variable and checkout_system as the predictor. Note that lm() will automatically assign alphabetic factor levels to character predictors. To make the regression coefficient for checkout_system easier to interpret in this tutorial we will manually change the factor levels. This will ensure that the coefficient is, appropriately, positive.
+## Q1. Spending by checkout system
+
+Fit a simple linear regression with `spent` as the outcome and `checkout_system` as the predictor. Set the factor levels to `old` and then `new`. This makes the old system the reference group, so the checkout-system coefficient estimates the average spending difference between the new and old systems.
 
 ```{r}
-velo$checkout_system <- factor(velo$checkout_system, levels = c("old", "new"))
-
-velo$checkout_system %>% str()
+velo$checkout_system <- factor(
+  velo$checkout_system,
+  levels = c("old", "new")
+)
 
 velo_model <- lm(spent ~ checkout_system, data = velo)
 summary(velo_model)
 ```
 
-### Based on the model summary, answer the following questions: 
-### 1) What is average spending for customers using 1) the new system and 2) the old system? This information can be extracted directly from the linear model output.
-New System: $2279.89
-Old System: $2217.15
-### 2) What is the difference in average customer spending between the new and old systems, and is the difference statistically significant at the p < .05 level?
-Customers using the new system spent an average of $62.74 more. P = .154, so it is not statistically significant since it is greater than .05.
-### 3) Compare these results to those you obtained using a t-test in the last module (see the above output).
-The average spending estimates are the same as in the t-test. The p-values are nearly identical (.154 for regression and .1536 for the Welch t-test), and both show that the difference is not statistically significant. The regression also reports the standard error of the estimated difference ($44.03) and a summary of the model residuals.
+### Results
 
-## Q2
-### Fit a simple linear regression with spent as the target variable and checkout_system as the predictor, but include only customers who were using a mobile device. (Later you will learn how to fit this sort of regression using all the data, but for now subset the data to include only mobile users.) Answer these questions based on the model summary for this regression:
+1. **Average spending**
 
-```{r mobile-filtered}
+   - New system: **$2,279.89**
+   - Old system: **$2,217.15**
+
+2. **Difference and significance**
+
+   Customers using the new system spent an average of **$62.74 more**. The difference was not statistically significant (*p* = .154), since the p-value is greater than .05.
+
+3. **Comparison with the t-test**
+
+   The average spending estimates match those from the t-test. The p-values are very close (.154 for the regression and .1536 for the Welch t-test), and both indicate that the difference is not statistically significant. The regression also reports the standard error of the estimated difference ($44.03) and a summary of the model residuals.
+
+## Q2. Spending by checkout system among mobile customers
+
+Fit the same regression using only customers who used a mobile device.
+
+```{r}
 velo_mobile <- velo %>%
   filter(device == "mobile")
 
 mobile_model <- lm(spent ~ checkout_system, data = velo_mobile)
 summary(mobile_model)
 ```
-### 1) What is the difference in mobile customer spending between the new and old systems?
-Mobile customers using the new system spent an average of $148.08 more than those using the old system ($2,323.00 vs. $2,174.92).
-### 2) Is the difference statistically significant at the p < .05 level?
-Yes. The p-value is .017 and the difference is statistically significant.
-### 3) Compare these results to those you obtained using a t-test in the last module (see the above output).
-The regression and Welch t-test give the same group means and the same conclusion. Their p-values are very close (.017 vs. .01655); the small difference is because the regression and Welch test use different variance assumptions. Both show a statistically significant difference.
 
+### Results
 
-## Q3
-### Using the summary of the regression model object from Q2, calculate a 95% confidence interval (CI) for the checkout_system coefficient using 2 as the critical value. Interpret the CI: What does it mean exactly?
+1. **Difference in average spending**
 
-```{r}
-148.08 - 2 * 61.98
-148.08 + 2 * 61.98
-```
+   Mobile customers using the new system spent an average of **$148.08 more** than those using the old system (**$2,323.00** versus **$2,174.92**).
 
-The approximate 95% CI is [$24.12, $272.04]. This means we are approximately 95% confident that mobile customers using the new checkout system spend, on average, between $24.12 and $272.04 more than those using the old system. Since the interval does not include $0, it supports a statistically significant difference at the .05 level.
+2. **Statistical significance**
 
-## Q4
-### Based on the model output in Q2, along with the 95% CI you calculated in Q3, develop best and worst case revenue projections for the new checkout system. What range of increased revenue might the company expect using the new checkout system (compared to the old system) and, based on this, does the coefficient estimate for checkout_system have practical significance in your view? (Hint: multiply the lower and upper bounds of the CI you calculated in Q3 by an arbitrary number of customers. That range, remember, is expressed in terms of average dollars per customer.)
+   The difference was statistically significant at the .05 level (*p* = .017).
 
-### A 95% CI for a coefficient represents the most likely range of values under repeated sampling. Working with a range is advantageous. Velo.com executives might well be interested in the low end of the range in order to assess the financial risks associated with implementing the new system. Additionally, scaling up the average spending per customer gives you a way to convey the practical significance of using the new system.
+3. **Comparison with the t-test**
 
-### What do I mean by “scaling up”? For communication purposes it is often helpful to multiply averages, like the upper and lower bounds of the confidence interval, by some arbitrary scaling number (in this case, for example, 1000 or 5000 customers or whatever you think makes sense) so that a decision-maker can get a better sense of the overall impact to the business of a proposed change. Think back to the Conley Fisheries case where you calculated that the maximum daily loss per boat was $10,000. By itself, that may seem like a sustainable loss. But remember: there are 50 boats. So, really, to convey a complete sense of the risk, the maximum per boat daily loss must be scaled up — multiplied by — the number of boats in the fleet.
+   The regression and Welch t-test give the same group means and the same conclusion. Their p-values are very close (.017 versus .01655). The small difference reflects their different variance assumptions: the regression uses a pooled variance estimate, while Welch’s t-test does not assume equal variances.
+
+## Q3. Confidence interval for the mobile-system coefficient
+
+Use 2 as the critical value to calculate an approximate 95% confidence interval for the `checkout_system` coefficient.
 
 ```{r}
+mobile_coefficients <- coef(summary(mobile_model))
+mobile_estimate <- mobile_coefficients["checkout_systemnew", "Estimate"]
+mobile_se <- mobile_coefficients["checkout_systemnew", "Std. Error"]
+critical_value <- 2
 
+mobile_ci <- c(
+  lower = mobile_estimate - critical_value * mobile_se,
+  upper = mobile_estimate + critical_value * mobile_se
+)
+
+round(mobile_ci, 2)
 ```
 
-## Q5
-### What course of action should Sarah recommend to the management at velo.com based on this additional analysis? Please incorporate your analytic results from above in fashioning an answer. In particular, cite the results from the new analysis, the simple linear regression, and discuss your interpretation of the range you developed in Question 4.
+The approximate 95% confidence interval is **$24.12 to $272.04**. We are 95% confident that, among mobile customers, average spending with the new system is between **$24.12 and $272.04 higher** than with the old system. Because the interval does not include $0, it supports a statistically significant difference at the .05 level.
 
+## Q4. Scale the estimate to a customer group
+
+To show the possible business impact, scale the confidence interval by an example group of 1,000 mobile customers.
+
+```{r}
+customer_count <- 1000
+
+revenue_projection <- c(
+  lower_bound = unname(mobile_ci["lower"]),
+  point_estimate = unname(mobile_estimate),
+  upper_bound = unname(mobile_ci["upper"])
+) *
+  customer_count
+
+round(revenue_projection, 2)
+```
+
+For 1,000 mobile customers, the projected increase in spending ranges from **$24,120** (lower bound) to **$272,040** (upper bound), with a point estimate of **$148,080**. These projections apply to the same time period represented by the spending data.
+
+Even the lower-bound projection suggests a potentially meaningful increase. However, it is slightly below the estimated $25,000 server cost. The expected increase should therefore be compared with the relevant time period, server and maintenance costs, and profit margins before concluding that the system is cost-effective.
+
+::: {.callout-note title="Why scale the estimate?"}
+Multiplying the per-customer confidence interval by a customer count helps communicate the possible overall business impact. For example, a per-customer increase that seems modest may become substantial across 1,000 or 5,000 customers. The same scaling applies when considering potential losses across a fleet of boats or another larger group.
+:::
+
+## Q5. Recommendation
+
+Sarah should recommend a phased rollout to mobile customers, beginning with a manageable pilot and monitoring spending, reliability, and operating costs before expanding. In the mobile-only regression, customers using the new checkout system spent an estimated **$148.08 more on average** than those using the old system. This difference was statistically significant (*p* = .017), with an approximate 95% confidence interval of **$24.12 to $272.04 more per customer**.
+
+For 1,000 mobile customers, that corresponds to a projected increase of about **$24,120 to $272,040** over the period represented by the data. The lower-bound projection is slightly below the estimated $25,000 server cost, so Sarah should consider server and maintenance costs and profit margins before recommending a full rollout. The regression using all customers estimated a smaller **$62.74 difference** that was not statistically significant (*p* = .154). The results support testing the new system with mobile customers, while measuring its performance before assuming the same benefit across all customers.
