@@ -111,18 +111,7 @@ A hidden input that identifies the submitted form as a tutoring request.
 
 ### Validation Test Results
 
-| Test case | Result |
-| --- | --- |
-| Valid time | PASS |
-| Missing time | PASS |
-| Altered value | PASS |
-| Multiple valid topics | PASS |
-| Missing topics | PASS |
-| Altered topic | PASS |
-| Minimum length | PASS |
-| Maximum length | PASS |
-| Too short | PASS |
-| Too long | PASS |
+![Validation test results page](Screenshot2.png)
 
 All 10 tests passed. A passing test means the validation function returned the expected result, including rejecting invalid input.
 
