@@ -18,6 +18,8 @@ format:
 ### Load packages
 
 ```{r}
+#| message: false
+#| warning: false
 library(tidyverse)
 options(pillar.sigfig = 5)
 ```
