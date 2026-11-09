@@ -1,32 +1,40 @@
+
 ---
 title: "PacDev"
+subtitle: "Housing Price Regression Analysis"
 author: "Jamison Orton"
 date: "November 6, 2026"
 format:
   html:
     theme: cosmo
     toc: true
+    toc-title: "Contents"
     toc-depth: 2
     code-fold: true
     code-summary: "Show R code"
     code-tools: true
     embed-resources: true
+    smooth-scroll: true
+    number-sections: false
+execute:
+  warning: false
+  message: false
 ---
 
-## Setup
-
-### Load packages
-
 ```{r}
-#| message: false
-#| warning: false
-library(tidyverse)
+#| label: setup
+#| include: false
+
+suppressPackageStartupMessages(library(tidyverse))
+
 options(pillar.sigfig = 5)
+options(scipen = 999)
 ```
 
-### Import the data
-
 ```{r}
+#| label: import-data
+#| include: false
+
 pacdev <- read.csv(
   file = "pacdev_data.csv",
   stringsAsFactors = FALSE,
@@ -34,45 +42,241 @@ pacdev <- read.csv(
 )
 ```
 
-## Q1. Simple lm
+## Q1. Simple Linear Regression
 
-1. Fit a simple linear regression model of price ~ sqft. Interpret the coefficients for the intercept and sqft.
-To interpret model coefficients in this case study means: write down in concrete terms what each coefficient says about the value of a home, or the change in the value of a home, conditional on predictors. For example, suppose the coefficient for x is 1.5. To interpret this number would entail saying something like this: “An increase in 1 in x is associated with a change of 1.5 in y, on average, holding the other predictors constant.”
+### Initial Model
 
+The first model examines the relationship between home price and square footage.
 
+```{r}
+#| label: simple-regression
 
-2. Center sqft and refit the model. The intercept changes a lot after centering. Why?
-Note: there are several options for centering.
+simple_lm <- lm(price ~ sqft, data = pacdev)
 
-Create a new centered variable in your data and use that in the model. You would simply subtract the mean of the column from every observation.
-Use the scale() function in the model formula: scale(sqft, scale = F). (scale = F means: center but don’t scale. The default for the function is to center and scale.)
-Do the centering yourself in the model formula using the I() function: I(sqft - mean(sqft)).
+summary(simple_lm)
+```
 
-## Q2. Multiple lm
+**Interpretation**
 
-1. Fit a multiple regression model of price using all the available predictors. Center the numeric predictors. Interpret the coefficients in this model (including the intercept).
-Remember that Long Beach is the (missing) reference city (assuming that factor levels have been assigned alphabetically).
+**Intercept ($40,623.02):** The intercept represents the predicted price of a home with 0 square feet. However, this is not practically meaningful because a home cannot realistically have 0 square feet.
 
-## Q3
+**Square Footage ($269.35):** For every additional square foot, the predicted price of a home increases by approximately $269.35, on average.
 
-1. To the above model add an interaction between centered sqft and city. This means that you combine these terms multiplicatively (*) rather than additively (+).
+### Centering Square Footage
 
-2. Create a visualization of the interaction between sqft and city.
+Centering square footage makes the intercept more meaningful by changing the reference point to the average home size.
 
-3. Interpret the two interaction coefficients in this model.
+```{r}
+#| label: centered-regression
 
-Interaction models can be tricky to understand. Here is some guidance:
+simple_fitted <- lm(
+  price ~ scale(sqft, scale = FALSE),
+  data = pacdev
+)
 
-The intercept is the average value of the target when the inputs are 0 (for numeric variables) or the reference category (for categorical variables).
+summary(simple_fitted)
+```
 
-The main effects are the non-interaction coefficients in the output. In the plot you created for this question you can see that there is a regression line for each city. Similarly in the interaction model: there is no single relationship between price and sqft, and consequently the main effect for sqft is conditional on city. Specifically, it denotes the relationship between sqft and price for the reference city. The same is true for the main effects ofcity: they are conditional on sqft = 0. The main effects for a predictor in an interaction model will always be conditional on the levels of the variable with which it has been interacted.
+**Interpretation**
 
-The interaction effects are the final 2 coefficients in the output. (The colon indicates the interaction, as in sqft:citySanta Monica.) These coefficients estimate the change in the slope of the regression line for each city compared to the reference city. If the interaction coefficients are positive that means that the regression line relating sqft to price is steeper for that particular city in comparison to the reference city, or, equivalently, that the relationship is stronger.
+The intercept changes because centering shifts the reference point from 0 square feet to the average square footage of homes in the dataset.
 
-## Q4.
+Before centering, the intercept represented the predicted price of a home with 0 square feet. After centering, the intercept represents the predicted price of a home with average square footage, which is much more meaningful.
 
-Is this a good model? To assess the interaction model fit create a residual plot with model residuals on the vertical axis and the fitted values on the horizontal axis. One easy way to get a residual plot in R is to use plot(model, which = 1). Comment on model fit.
+The square footage coefficient and the model's predictions remain unchanged.
 
-## Q5.
+---
 
-What should Andrew say in his presentation? Write a brief summary of the quantitative evidence that he should use to support this recommendation.
+## Q2. Multiple Linear Regression
+
+This model includes city, square footage, bedrooms, and bathrooms as predictors of home price. Numeric predictors are centered, and Long Beach serves as the reference city.
+
+```{r}
+#| label: multiple-regression
+
+# Set the reference city
+pacdev$city <- relevel(
+  factor(pacdev$city),
+  ref = "Long Beach"
+)
+
+# Center numeric predictors
+pacdev_centered <- pacdev %>%
+  mutate(
+    across(
+      all_of(c("sqft", "bed", "bath")),
+      ~ as.numeric(scale(.x, scale = FALSE))
+    )
+  )
+
+# Fit the multiple regression
+multiple_fitted <- lm(
+  price ~ city + sqft + bed + bath,
+  data = pacdev_centered
+)
+
+summary(multiple_fitted)
+```
+
+### Coefficient Interpretations
+
+**Intercept ($513,686.85):** The predicted price of a home in Long Beach with average square footage, average number of bedrooms, and average number of bathrooms is $513,686.85.
+
+**Santa Monica ($189,818.76):** Homes in Santa Monica are predicted to cost $189,818.76 more than comparable homes in Long Beach, holding square footage, bedrooms, and bathrooms constant.
+
+**Westwood ($88,101.33):** Homes in Westwood are predicted to cost $88,101.33 more than comparable homes in Long Beach, holding square footage, bedrooms, and bathrooms constant.
+
+**Square Footage ($272.04):** For every additional square foot, the predicted home price increases by $272.04, on average, holding city, bedrooms, and bathrooms constant.
+
+**Bedrooms (-$524.49):** For every additional bedroom, the predicted home price decreases by $524.49, on average, holding square footage, bathrooms, and city constant. However, this coefficient is not statistically significant (p = 0.950).
+
+**Bathrooms (-$2,471.71):** For every additional bathroom, the predicted home price decreases by $2,471.71, on average, holding square footage, bedrooms, and city constant. However, this coefficient is not statistically significant (p = 0.793).
+
+---
+
+## Q3. Interaction Effects
+
+### Interaction Model
+
+This model examines whether the relationship between square footage and home price differs by city.
+
+```{r}
+#| label: interaction-regression
+
+interaction_fitted <- lm(
+  price ~ city * sqft + bed + bath,
+  data = pacdev_centered
+)
+
+summary(interaction_fitted)
+```
+
+### Visualizing the Interaction
+
+The following visualization compares the predicted relationship between square footage and home price across the three cities, holding bedrooms and bathrooms at their average values.
+
+```{r}
+#| label: interaction-plot
+#| fig-width: 9
+#| fig-height: 5.5
+
+# Create a prediction grid
+prediction_grid <- expand.grid(
+  sqft = seq(
+    min(pacdev_centered$sqft),
+    max(pacdev_centered$sqft),
+    length.out = 100
+  ),
+  city = levels(pacdev_centered$city),
+  bed = 0,
+  bath = 0
+)
+
+# Predict prices
+prediction_grid$predicted_price <- predict(
+  interaction_fitted,
+  newdata = prediction_grid
+)
+
+# Plot interaction
+ggplot(
+  prediction_grid,
+  aes(
+    x = sqft,
+    y = predicted_price,
+    color = city
+  )
+) +
+  geom_line(linewidth = 1.2) +
+  scale_y_continuous(
+    labels = scales::label_dollar()
+  ) +
+  scale_color_brewer(palette = "Dark2") +
+  labs(
+    title = "Square Footage and Home Prices by City",
+    subtitle = "Predicted prices holding bedrooms and bathrooms at their averages",
+    x = "Square Footage (Centered)",
+    y = "Predicted Home Price",
+    color = "City",
+    caption = "Source: PacDev housing data"
+  ) +
+  theme_minimal(base_size = 13) +
+  theme(
+    plot.title = element_text(face = "bold", size = 16),
+    plot.subtitle = element_text(color = "gray40"),
+    legend.position = "bottom",
+    panel.grid.minor = element_blank()
+  )
+```
+
+### Interpreting the Interactions
+
+**Santa Monica × Sqft ($89.63):** For every additional square foot, the predicted home price increases by $89.63 more in Santa Monica than in Long Beach, holding bedrooms and bathrooms constant. This interaction is statistically significant (p < 0.001).
+
+**Westwood × Sqft ($36.65):** For every additional square foot, the predicted home price increases by $36.65 more in Westwood than in Long Beach, holding bedrooms and bathrooms constant. This interaction is also statistically significant (p = 0.0424).
+
+### Comparing Price per Square Foot
+
+| City | Estimated Increase per Additional Sqft |
+|:---|---:|
+| Long Beach | $241.52 |
+| Santa Monica | $331.15 |
+| Westwood | $278.17 |
+
+The estimated effect of square footage is strongest in Santa Monica, followed by Westwood and Long Beach.
+
+---
+
+## Q4. Model Diagnostics
+
+### Residual Analysis
+
+A residual plot helps evaluate whether the interaction model adequately captures the relationship between the predictors and home prices.
+
+```{r}
+#| label: residual-plot
+#| fig-width: 9
+#| fig-height: 5.5
+
+plot(interaction_fitted, which = 1)
+```
+
+### Model Fit Assessment
+
+The residual plot shows that most residuals are scattered around zero without a strong pattern, suggesting that the linear model is reasonable.
+
+However, there is some uneven spread in the residuals and a few outliers, indicating that the model does not predict all home prices equally well.
+
+The R-squared value of 0.3111 means the model only explains about 31% of the variation in home prices.
+
+Overall, the model is somewhat useful, but it is not a particularly strong predictor of home prices.
+
+---
+
+## Q5. Business Recommendation
+
+### Recommended Strategy
+
+Andrew should recommend prioritizing larger homes in **Santa Monica** because additional square footage is associated with the greatest increase in home value there.
+
+### Supporting Evidence
+
+| City | Price Increase per Sqft |
+|:---|---:|
+| Santa Monica | $331.15 |
+| Westwood | $278.17 |
+| Long Beach | $241.52 |
+
+Santa Monica homes also have a predicted price premium of approximately **$189,480** over comparable Long Beach homes at average square footage.
+
+This suggests that investing in larger properties in Santa Monica could generate higher selling prices.
+
+### Limitations and Considerations
+
+The interaction model explains only **31.11% of the variation in home prices**. Therefore, higher predicted selling prices do not necessarily mean higher investment returns.
+
+Before making investment decisions, Andrew should also consider purchase costs, renovation expenses, and other property characteristics.
+
+### Final Recommendation
+
+Prioritize evaluating larger properties in Santa Monica for potential investment, but compare expected selling prices against acquisition and improvement costs before committing capital.
