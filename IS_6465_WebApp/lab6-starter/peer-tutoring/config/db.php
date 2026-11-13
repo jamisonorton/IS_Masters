@@ -1,5 +1,6 @@
 <?php
-function openDatabase($path = null) {
+function openDatabase($path = null)
+{
     if ($path === null) {
         $path = dirname(__DIR__) . '/database/tutoring.db';
     }

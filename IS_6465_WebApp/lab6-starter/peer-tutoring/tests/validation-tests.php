@@ -1,5 +1,5 @@
 <?php
-require_once dirname(__DIR__).'/includes/validation.php';
+require_once dirname(__DIR__) . '/includes/validation.php';
 
 //test validatePreferredTime
 $tests = [
