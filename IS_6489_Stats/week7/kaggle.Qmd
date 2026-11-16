@@ -1,0 +1,51 @@
+---
+title: "Housing - Kaggle"
+author: "Jamison Orton"
+date: "November 15, 2026"
+format:
+  html:
+    theme: cosmo
+    toc: true
+    toc-title: "Contents"
+    toc-depth: 2
+    code-fold: true
+    code-summary: "Show R code"
+    code-tools: true
+    embed-resources: true
+    smooth-scroll: true
+    number-sections: false
+execute:
+  warning: false
+  message: false
+---
+
+```{r}
+#| label: setup
+#| include: false
+
+suppressPackageStartupMessages(library(tidyverse))
+
+options(pillar.sigfig = 5)
+options(scipen = 999)
+```
+
+```{r}
+#| label: import-data
+#| include: false
+
+train <- read.csv(
+  file = "train.csv",
+  stringsAsFactors = FALSE,
+  fileEncoding = "latin1"
+)
+test <- read.csv(
+  file = "test.csv",
+  stringsAsFactors = FALSE,
+  fileEncoding = "latin1"
+)
+submit_example <- read.csv(
+  file = "sample_submission.csv",
+  stringsAsFactors = FALSE,
+  fileEncoding = "latin1"
+)
+```
