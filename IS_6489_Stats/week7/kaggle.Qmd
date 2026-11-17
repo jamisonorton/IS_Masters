@@ -28,7 +28,7 @@ suppressPackageStartupMessages(library(tidyverse))
 options(pillar.sigfig = 5)
 options(scipen = 999)
 ```
-
+## Loading the data
 ```{r}
 #| label: import-data
 #| include: false
@@ -50,36 +50,227 @@ submit_example <- read.csv(
 )
 ```
 
-```{r}
-head(train)
-```
-
-```{r}
-head(test)
-```
-
+## Counting the missing values in my 5 predictors
 ```{r}
 count_missings <- function(x) sum(is.na(x))
+train |>
+  summarise(across(
+    c(OverallQual, GrLivArea, GarageCars, TotalBsmtSF, YearBuilt),
+    count_missings
+  ))
+```
+
+```{r}
+train <- train |>
+  mutate(OverallQual = factor(OverallQual))
+```
+## Graphs for the predictors
+```{r}
+train |>
+  ggplot(aes(factor(OverallQual), SalePrice)) +
+  geom_boxplot() +
+  labs(title = "SalePrice ~ OverallQual")
 
 train |>
+  ggplot(aes(GrLivArea, SalePrice)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE) +
+  labs(title = "SalePrice ~ GrLivArea")
+
+train |>
+  ggplot(aes(factor(GarageCars), SalePrice)) +
+  geom_boxplot() +
+  labs(title = "SalePrice ~ GarageCars")
+
+train |>
+  ggplot(aes(TotalBsmtSF, SalePrice)) +
+  geom_point(alpha = 0.4) +
+  geom_smooth(method = "lm", se = FALSE) +
+  labs(title = "SalePrice ~ TotalBsmtSF")
+
+train |>
+  ggplot(aes(YearBuilt, SalePrice)) +
+  geom_point(alpha = 0.4) +
+  geom_smooth(method = "lm", se = FALSE) +
+  labs(title = "SalePrice ~ YearBuilt")
+```
+
+## Training and Validation Split
+```{r}
+set.seed(124)
+
+index <- sample(
+  x = 1:nrow(train),
+  size = floor(nrow(train) * 0.7),
+  replace = FALSE
+)
+
+train_fold <- train[index, ]
+validation_fold <- train[-index, ]
+```
+
+## Fit and Evaluate the LM
+```{r}
+model <- lm(
+  SalePrice ~ OverallQual + GrLivArea + GarageCars + TotalBsmtSF + YearBuilt,
+  data = train_fold
+)
+
+summary(model) # R2 = .77
+```
+
+## Calculate RMSE and R2
+```{r}
+rmse <- function(observed, predicted) sqrt(mean((predicted - observed)^2))
+
+R2 <- function(observed, predicted) {
+  TSS <- sum((observed - mean(observed))^2)
+  RSS <- sum((predicted - observed)^2)
+  1 - RSS / TSS
+}
+```
+
+## Compare Training and Validation Performance
+```{r}
+train_predictions <- predict(model, newdata = train_fold)
+
+validation_predictions <- predict(
+  model,
+  newdata = validation_fold
+)
+
+performance <- tibble(
+  Dataset = c("Training", "Validation"),
+  RMSE = c(
+    rmse(train_fold$SalePrice, train_predictions),
+    rmse(validation_fold$SalePrice, validation_predictions)
+  ),
+  R2 = c(
+    R2(train_fold$SalePrice, train_predictions),
+    R2(validation_fold$SalePrice, validation_predictions)
+  )
+)
+
+# Training and estimated out-of-sample performance
+performance
+```
+
+## Five-Fold Cross-Validation
+```{r}
+set.seed(124)
+
+k <- 5
+
+folds <- sample(
+  rep(1:k, length.out = nrow(train_fold))
+)
+
+cv_results <- tibble(
+  Fold = integer(),
+  RMSE = double(),
+  R2 = double()
+)
+
+for (i in 1:k) {
+  cv_train <- train_fold[folds != i, ]
+  cv_test <- train_fold[folds == i, ]
+
+  cv_model <- lm(
+    SalePrice ~ OverallQual + GrLivArea + GarageCars + TotalBsmtSF + YearBuilt,
+    data = cv_train
+  )
+
+  cv_predictions <- predict(
+    cv_model,
+    newdata = cv_test
+  )
+
+  cv_results <- bind_rows(
+    cv_results,
+    tibble(
+      Fold = i,
+      RMSE = rmse(cv_test$SalePrice, cv_predictions),
+      R2 = R2(cv_test$SalePrice, cv_predictions)
+    )
+  )
+}
+
+cv_results
+```
+
+## Average Cross-Validation Performance
+```{r}
+cv_results |>
+  summarise(
+    Mean_RMSE = mean(RMSE),
+    Mean_R2 = mean(R2)
+  )
+```
+
+## Cross-Validation Visualization
+```{r}
+cv_results |>
+  ggplot(aes(x = factor(Fold), y = R2)) +
+  geom_col() +
+  geom_hline(
+    yintercept = 0.75,
+    linetype = "dashed",
+    color = "red"
+  ) +
+  labs(
+    title = "R-squared Across Cross-Validation Folds",
+    x = "Fold",
+    y = "R-squared"
+  )
+```
+## Submit to Kaggle
+```{r}
+submission_model <- lm(
+  SalePrice ~ OverallQual + GrLivArea + GarageCars + TotalBsmtSF + YearBuilt,
+  data = train
+)
+```
+
+```{r}
+test <- test |>
+  mutate(
+    OverallQual = factor(
+      OverallQual,
+      levels = levels(train$OverallQual)
+    ),
+    GarageCars = replace_na(GarageCars, 0),
+    TotalBsmtSF = replace_na(TotalBsmtSF, 0)
+  )
+```
+
+```{r}
+test |>
+  select(OverallQual, GrLivArea, GarageCars, TotalBsmtSF, YearBuilt) |>
   summarise_all(count_missings)
 ```
 
 ```{r}
-train <- train |>
-  mutate(Alley = replace_na(data = Alley, replace = "none"))
+submission_predictions <- predict(submission_model, newdata = test)
+
+head(submission_predictions)
 ```
 
 ```{r}
-count_missings(train$LotFrontage)
+#need to look like this so get Id and SalePrice
+head(submit_example)
+
+submission <- test |>
+  select(Id) |>
+  mutate(SalePrice = submission_predictions)
+
+head(submission)
+
+# write to csv
+write.csv(submission, "kaggle_submission.csv", row.names = F)
 ```
 
-```{r}
-train <- train |>
-  mutate(
-    LotFrontage = replace_na(data = LotFrontage, median(LotFrontage, na.rm = T))
-  )
+## Kaggle Submission Results:
 
-train$LotFrontage |>
-  summary()
-```
+### Kaggle Score: 0.17409
+### Leaderboard Rank: 4346
+### Submission Date November 17, 2026
