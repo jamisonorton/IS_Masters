@@ -1,0 +1,13 @@
+<?php
+require_once __DIR__ . '/../config/db.php'; require_once __DIR__ . '/../repositories/requestPDO.php'; require_once __DIR__ . '/../services/requestService.php'; require_once __DIR__ . '/../includes/auth.php';
+$pdo = openDatabase(); $user = requireLogin($pdo); requireRole($user, ['Student', 'Administrator']);
+$course = trim((string)($_GET['course'] ?? '')); $status = (string)($_GET['status'] ?? '');
+if ($course !== '' && !in_array($course, ['IS 6465', 'IS 6495', 'IS 6570'], true)) { http_response_code(400); exit('Invalid course'); }
+if ($status !== '' && !in_array($status, ['Open', 'Cancelled', 'Assigned', 'Completed'], true)) { http_response_code(400); exit('Invalid status'); }
+$isAdmin = $user['role'] === 'Administrator';
+$rows = listRequestsForUser($pdo, $course, $status, $user['user_id'], $isAdmin);
+require __DIR__ . '/../includes/header.php'; require __DIR__ . '/../includes/nav.php'; ?>
+<main class="container py-4"><h1><?= $isAdmin ? 'Tutoring requests' : 'My Tutoring Requests' ?></h1>
+<form method="get" class="row g-2 mb-3"><div class="col"><select class="form-select" name="course"><option value="">All courses</option><?php foreach (['IS 6465','IS 6495','IS 6570'] as $c): ?><option value="<?= htmlspecialchars($c, ENT_QUOTES, 'UTF-8') ?>" <?= $c === $course ? 'selected' : '' ?>><?= htmlspecialchars($c, ENT_QUOTES, 'UTF-8') ?></option><?php endforeach; ?></select></div><div class="col"><select class="form-select" name="status"><option value="">All statuses</option><?php foreach (['Open','Cancelled','Assigned','Completed'] as $s): ?><option value="<?= $s ?>" <?= $s === $status ? 'selected' : '' ?>><?= $s ?></option><?php endforeach; ?></select></div><div class="col-auto"><button class="btn btn-primary">Filter</button></div></form>
+<?php if (!$rows): ?><p>No matching requests.</p><?php else: ?><div class="table-responsive"><table class="table"><thead><tr><th>ID</th><?php if ($isAdmin): ?><th>Student</th><?php endif; ?><th>Course</th><th>Details</th><th>Date</th><th>Status</th><th></th></tr></thead><tbody><?php foreach ($rows as $r): $topic = decodeTopic($r['topic']); ?><tr><td><?= (int)$r['request_id'] ?></td><?php if ($isAdmin): ?><td><?= htmlspecialchars($r['student_name'], ENT_QUOTES, 'UTF-8') ?></td><?php endif; ?><td><?= htmlspecialchars($r['course'], ENT_QUOTES, 'UTF-8') ?></td><td><?= htmlspecialchars($topic['reason'], ENT_QUOTES, 'UTF-8') ?></td><td><?= htmlspecialchars($r['preferred_date'], ENT_QUOTES, 'UTF-8') ?></td><td><?= htmlspecialchars($r['status'], ENT_QUOTES, 'UTF-8') ?></td><td><a href="request-details.php?request_id=<?= (int)$r['request_id'] ?>">View</a></td></tr><?php endforeach; ?></tbody></table></div><?php endif; ?>
+</main><?php require __DIR__ . '/../includes/footer.php'; ?>
