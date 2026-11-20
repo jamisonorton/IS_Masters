@@ -25,7 +25,7 @@ Scope: UM-01 through UM-10 from the supplied User Management Design Document, pl
 - The existing `tutoring_requests.student_id` foreign key and request status model are unchanged. The service continues storing the Lab 6 reason and selected topic list as JSON text in the existing `topic` column.
 - Pages enforce authentication and roles before displaying or changing protected data. Repository methods use prepared statements; request SQL scopes student reads and writes to the authenticated account.
 - `config/db.php` keeps database setup and migration at the configuration boundary. `services/` coordinates validation and multi-row updates. `repositories/` contains SQL. `includes/` centralizes presentation support and security helpers.
-- The implementation includes no additional feature outside the specified user-management, authentication, and protected tutoring workflows. The CLI administrator bootstrap is necessary to provision the first administrative account without allowing public privilege assignment.
+- The implementation includes no additional feature outside the specified user-management, authentication, and protected tutoring workflows. The CLI administrator bootstrap at `database/create-admin.php` is necessary to provision the first administrative account without allowing public privilege assignment. Fresh databases start with `database/setup-database.sql` and then apply `database/upgrade-to-user-management.sql`; an existing Lab 6 database needs only the upgrade script.
 
 ## Verification evidence
 

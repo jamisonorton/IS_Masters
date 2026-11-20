@@ -1,5 +1,6 @@
 <?php
 require_once dirname(__DIR__) . '/repositories/userPDO.php';
+require_once __DIR__ . '/urls.php';
 
 function startSecureSession()
 {
@@ -37,14 +38,14 @@ function requireLogin($pdo)
 {
     startSecureSession();
     if (empty($_SESSION['user_id'])) {
-        header('Location: login.php', true, 303); exit;
+        header('Location: ' . appUrl('php/login.php'), true, 303); exit;
     }
     if (time() - (int)($_SESSION['last_activity'] ?? 0) > 1200) {
-        logoutSession(); header('Location: login.php?expired=1', true, 303); exit;
+        logoutSession(); header('Location: ' . appUrl('php/login.php?expired=1'), true, 303); exit;
     }
     $user = findUserById($pdo, (int)$_SESSION['user_id']);
     if (!$user || $user['status'] !== 'Active') {
-        logoutSession(); header('Location: login.php?inactive=1', true, 303); exit;
+        logoutSession(); header('Location: ' . appUrl('php/login.php?inactive=1'), true, 303); exit;
     }
     $_SESSION['last_activity'] = time();
     $_SESSION['display_name'] = $user['full_name'];

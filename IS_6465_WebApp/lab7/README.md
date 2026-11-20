@@ -6,8 +6,8 @@ This package extends the supplied Lab 6 PHP, PDO, and SQLite application. It imp
 
 Requirements: PHP 8.0 or later with PDO SQLite and mbstring enabled; SQLite 3 for the optional schema setup command.
 
-1. From this `lab7` directory, run `sqlite3 database/tutoring.db < database/setup-database.sql` if you want to initialize or refresh the demo schema. The included database is the Lab 6 sample database. The app adds the user account table and a nullable `students.user_id` link when it opens the database, preserving existing students and tutoring requests.
-2. Create the first administrator in a terminal: `php php/cli/create-admin.php`. The password is entered without terminal echo. This local CLI tool refuses to create another administrator while an active one exists. Public registration only permits Student and Tutor roles.
+1. For a fresh database, run both schema scripts in order: `sqlite3 database/tutoring.db < database/setup-database.sql`, then `sqlite3 database/tutoring.db < database/upgrade-to-user-management.sql`. For an existing Lab 6 database, back it up and run only the upgrade script once before starting the app. The upgrade preserves existing students and tutoring requests. The app also applies the schema migration when it opens the database if needed.
+2. Create the first administrator in a terminal: `php database/create-admin.php`. With no arguments, the script prompts for the name, email, and password; the password is entered without terminal echo. It also accepts three positional arguments when run from `database/`, for example `php create-admin.php "Test Administrator" admin@example.com "TestPassword123"`. A password supplied as an argument may be saved in shell history, so the interactive prompt is preferable. The CLI tool refuses to create another administrator while an active one exists. Public registration only permits Student and Tutor roles.
 3. Start the local server from this directory: `php -S 0.0.0.0:8000 php/router.php`.
 4. Open the forwarded application URL. Students and tutors can register. Sign in as the administrator to search and manage users.
 
@@ -16,11 +16,11 @@ Use HTTPS outside local development. Session cookies use `Secure` when PHP detec
 ## Architecture
 
 - `php/` contains request handlers and pages.
-- `includes/` contains shared navigation, validation, session, authorization, and CSRF helpers.
+- `includes/` contains shared navigation, validation, session, authorization, CSRF, and base-path URL helpers. The URL helper keeps navbar links working when the app is served from a subfolder.
 - `services/` coordinates account and tutoring workflows and validates submitted values.
 - `repositories/` contains prepared PDO statements.
 - `config/db.php` opens SQLite, enables foreign keys, and safely adds the user-management schema to the supplied Lab 6 database.
-- `database/` contains the preserved sample database and setup SQL for a fresh database.
+- `database/` contains the preserved sample database, fresh setup SQL, the Lab 6 upgrade SQL, and the CLI-only administrator bootstrap.
 - `tests/` contains isolated CLI regression checks; tests use an in-memory SQLite database and do not write to `tutoring.db`.
 
 The new `users` table is the authoritative account, role, and status record. `students.user_id` links a Student account to the original `students` entity; tutoring requests continue to use the existing `student_id` foreign key. Tutors can register and manage their profiles but have no tutoring-request workflow in this version. The Lab 6 topic checkboxes and reason textarea remain encoded in the existing `topic` text column as JSON.
@@ -64,4 +64,4 @@ The first two scripts retain the Lab 6 regression coverage; the new isolated har
 
 ## Traceability and verification status
 
-All use cases have an implementation path in this package. See [TRACEABILITY.md](TRACEABILITY.md) for the requirement-to-file map and verification gaps. Runtime behavior remains **implemented, unverified** until the CLI scripts are run in the target PHP environment. The test suite does not claim execution evidence by existing on disk.
+All use cases have an implementation path in this package. See [TRACEABILITY.md](TRACEABILITY.md) for the requirement-to-file map and verification gaps, and [lab7-notes.md](lab7-notes.md) for the prompt and source-file notes. Runtime behavior remains **implemented, unverified** until the CLI scripts are run in the target PHP environment. The test suite does not claim execution evidence by existing on disk.
