@@ -1,0 +1,154 @@
+
+---
+title: "BioImplants"
+subtitle: "BioImplants Inc - Employee Satisfaction"
+author: "Jamison Orton"
+date: "November 21, 2026"
+format:
+  html:
+    theme: cosmo
+    toc: true
+    toc-title: "Contents"
+    toc-depth: 2
+    code-fold: true
+    code-summary: "Show R code"
+    code-tools: true
+    embed-resources: true
+    smooth-scroll: true
+    number-sections: false
+execute:
+  warning: false
+  message: false
+---
+
+```{r}
+#| label: setup
+#| include: false
+
+suppressPackageStartupMessages(c(library(tidyverse), library(ISLR)))
+
+options(pillar.sigfig = 5)
+options(scipen = 999)
+```
+
+```{r}
+#| label: import-data
+#| include: false
+
+bioimplant <- read.csv(
+  file = "bioimplants.csv",
+  stringsAsFactors = FALSE,
+  fileEncoding = "latin1"
+)
+```
+
+## Q1. What is the attrition rate for employees at BI? (A rate, remember, is expressed as a proportion.)
+
+```{r}
+attrition_rate <- function(x) {
+  mean(x == "Yes")
+}
+```
+### Overall attrition rate
+```{r}
+# Overall attrition rate
+attrition_rate(bioimplant$attrition)
+```
+### Summary Table
+```{r}
+# Conditional rates by department and job role
+attrition_table <- bioimplant %>%
+  group_by(department, job_role) %>%
+  summarise(
+    attrition_rate = attrition_rate(attrition),
+    .groups = "drop"
+  ) %>%
+  arrange(desc(attrition_rate))
+
+attrition_table
+```
+
+## Q2. Fit a logistic regression model of attrition using all the predictors. (Note: employee_number is NOT a predictor!)
+
+```{r}
+bioimplant$attrition <- factor(bioimplant$attrition, levels = c("No", "Yes"))
+
+log_model <- glm(
+  attrition ~ . - employee_number,
+  data = bioimplant,
+  family = binomial
+)
+
+summary(log_model)
+
+# Predict "Yes" when the predicted probability is at least 0.5
+predicted_probability <- predict(log_model, type = "response")
+predicted_class <- ifelse(predicted_probability >= 0.5, "Yes", "No")
+
+accuracy <- mean(predicted_class == as.character(bioimplant$attrition))
+accuracy
+
+# Majority class accuracy: predict "No" for every employee
+majority_accuracy <- mean(bioimplant$attrition == "No")
+majority_accuracy
+```
+
+The majority class accuracy os 0.8388 and the predicted accuracy of the model is 0.8925 improving the majority 0.0537 or 5.37 percentage points.
+
+## Q3. The upside of standardizing inputs by centering and scaling is that it allows you to compare coefficient effect sizes easily—they are all on the same scale. (The downside is that they are no longer scaled in the original units, and interpretation changes.) Even though the coefficients are expressed in log odds in this case, after standardization they can still be compared for effect sizes on a relative basis.
+
+```{r}
+bioimplant_scaled <- bioimplant %>%
+  mutate(across(
+    where(is.numeric),
+    ~ as.numeric(scale(.x))
+  ))
+
+scaled_log_model <- glm(
+  attrition ~ . - employee_number - department,
+  data = bioimplant_scaled,
+  family = binomial
+)
+
+summary(scaled_log_model)
+
+# Find the largest coefficient by absolute value, excluding the intercept
+coefs <- coef(scaled_log_model)
+coefs <- coefs[names(coefs) != "(Intercept)"]
+coefs[which.max(abs(coefs))]
+```
+
+<!-- Which of the centered and scaled predictors has the largest effect size?
+
+Interpret the coefficient with the largest effect size. Since you are working with standardized coefficients, the interpretation for continuous predictors will be: a 1 unit (that is, after scaling, a 1 standard deviation) increase in x is associated with a coefficient-sized change in the log odds of y, on average, while holding the other predictors constant. The coefficient represents the change in the log odds of the outcome associated with an increase from the reference level in the categorical variable. -->
+
+## Q4. Based on the above logistic regression model (and, specifically, on the coefficient with the largest effect size that you identified above), how might company policy be changed to reduce employee attrition?
+
+<!-- Describe your proposed policy change.
+
+Estimate and explain the change in churn probability associated with that policy change. -->
+
+```{r}
+p_current <- predict(scaled_log_model, type = "response")
+
+no_overtime <- bioimplant_scaled
+no_overtime$over_time <- "No"
+
+p_no_overtime <- predict(
+  scaled_log_model,
+  newdata = no_overtime,
+  type = "response"
+)
+
+mean(p_current)
+mean(p_no_overtime)
+mean(p_no_overtime) - mean(p_current)
+```
+
+## Q5. What should Angelica say in her report? Please include quantitative details from your answers to the questions above.
+
+BioImplants’ overall attrition rate is **16.1%** (237 of 1,470 employees). Attrition varies by department and job role: it is highest among Sales Representatives at **39.8%**, followed by Laboratory Technicians at **23.9%** and Human Resources employees in the Human Resources role at **23.1%**.
+
+A logistic regression using the predictors other than employee number correctly classified **89.3%** of employees in this dataset at a 0.5 decision threshold. That is **5.4 percentage points** above the **83.9%** accuracy from predicting “No” attrition for everyone, the majority class. This is in-sample accuracy and should not be treated as evidence of how well the model will predict attrition for new employees.
+
+In the standardized model, refit without department because it overlaps with job role, the largest coefficient was for working overtime (**1.974**, or about **7.2 times the odds** of attrition compared with not working overtime, holding other predictors constant). This suggests reviewing overtime practices—for example, by improving staffing and workload distribution. In a model-based scenario that changes every employee’s overtime status to “No” while holding other predictors fixed, the average predicted attrition probability falls from **16.1% to 10.3%**, a decrease of about **5.9 percentage points**. This is an estimate based on the model’s associations, not proof that reducing overtime would cause attrition to fall by that amount.
