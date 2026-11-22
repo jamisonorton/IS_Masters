@@ -42,19 +42,24 @@ bioimplant <- read.csv(
 )
 ```
 
-## Q1. What is the attrition rate for employees at BI? (A rate, remember, is expressed as a proportion.)
+## Q1. Attrition rate for employees at BI:
 
 ```{r}
+# attrition rate function
 attrition_rate <- function(x) {
   mean(x == "Yes")
 }
 ```
+
 ### Overall attrition rate
+
 ```{r}
 # Overall attrition rate
 attrition_rate(bioimplant$attrition)
 ```
+
 ### Summary Table
+
 ```{r}
 # Conditional rates by department and job role
 attrition_table <- bioimplant %>%
@@ -65,52 +70,61 @@ attrition_table <- bioimplant %>%
   ) %>%
   arrange(desc(attrition_rate))
 
-attrition_table
+head(attrition_table)
 ```
 
-## Q2. Fit a logistic regression model of attrition using all the predictors. (Note: employee_number is NOT a predictor!)
+## Q2. Logistic regression model of attrition using all predictors:
 
 ```{r}
+# setting the binomial levels
 bioimplant$attrition <- factor(bioimplant$attrition, levels = c("No", "Yes"))
 
+# model using everything but employee_number
 log_model <- glm(
   attrition ~ . - employee_number,
   data = bioimplant,
   family = binomial
 )
 
-summary(log_model)
+# summary(log_model)
 
 # Predict "Yes" when the predicted probability is at least 0.5
 predicted_probability <- predict(log_model, type = "response")
 predicted_class <- ifelse(predicted_probability >= 0.5, "Yes", "No")
 
+# comparing predicted category with actual. Result is proportion of correctly classified
 accuracy <- mean(predicted_class == as.character(bioimplant$attrition))
+cat("Predicted Accuracy:")
 accuracy
 
 # Majority class accuracy: predict "No" for every employee
 majority_accuracy <- mean(bioimplant$attrition == "No")
+cat("Majority Accuracy:")
 majority_accuracy
 ```
 
+### Model vs predicted comparison:
+
 The majority class accuracy os 0.8388 and the predicted accuracy of the model is 0.8925 improving the majority 0.0537 or 5.37 percentage points.
 
-## Q3. The upside of standardizing inputs by centering and scaling is that it allows you to compare coefficient effect sizes easily—they are all on the same scale. (The downside is that they are no longer scaled in the original units, and interpretation changes.) Even though the coefficients are expressed in log odds in this case, after standardization they can still be compared for effect sizes on a relative basis.
+## Q3. Compare Attrition Predictors Using Standardized Logistic Regression Coefficients:
 
 ```{r}
+# scaling the numeric data
 bioimplant_scaled <- bioimplant %>%
   mutate(across(
     where(is.numeric),
     ~ as.numeric(scale(.x))
   ))
 
+# another logistic regression using the scaled data removing employee_number and departmentı
 scaled_log_model <- glm(
-  attrition ~ . - employee_number - department,
+  attrition ~ . - employee_number,
   data = bioimplant_scaled,
   family = binomial
 )
 
-summary(scaled_log_model)
+# summary(scaled_log_model)
 
 # Find the largest coefficient by absolute value, excluding the intercept
 coefs <- coef(scaled_log_model)
@@ -118,9 +132,6 @@ coefs <- coefs[names(coefs) != "(Intercept)"]
 coefs[which.max(abs(coefs))]
 ```
 
-<!-- Which of the centered and scaled predictors has the largest effect size?
-
-Interpret the coefficient with the largest effect size. Since you are working with standardized coefficients, the interpretation for continuous predictors will be: a 1 unit (that is, after scaling, a 1 standard deviation) increase in x is associated with a coefficient-sized change in the log odds of y, on average, while holding the other predictors constant. The coefficient represents the change in the log odds of the outcome associated with an increase from the reference level in the categorical variable. -->
 
 ## Q4. Based on the above logistic regression model (and, specifically, on the coefficient with the largest effect size that you identified above), how might company policy be changed to reduce employee attrition?
 
