@@ -161,10 +161,17 @@ p_training_hr <- predict(
 )
 
 # Change in average predicted attrition probability for HR employees, in percentage points
-100 * (mean(p_training_hr[hr_employees]) - mean(p_current[hr_employees]))
+avg_att_hr <- 100 *
+  (mean(p_training_hr[hr_employees]) - mean(p_current[hr_employees]))
+cat("Average predicted attrition for HR employees:", round(avg_att_hr, 4), "\n")
 
 # Change in the company's average predicted attrition probability, in percentage points
-100 * (mean(p_training_hr) - mean(p_current))
+avg_att_comp <- 100 * (mean(p_training_hr) - mean(p_current))
+cat(
+  "Average predicted attrition for all employees:",
+  round(avg_att_comp, 4),
+  "\n"
+)
 ```
 
 The model identifies the HR job role as the group to examine. I modeled a change where HR employees attended one additional training session. The model predicts a lower average attrition probability (-2.34 percentage points) under this scenario.
