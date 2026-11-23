@@ -94,13 +94,12 @@ predicted_class <- ifelse(predicted_probability >= 0.5, "Yes", "No")
 
 # comparing predicted category with actual. Result is proportion of correctly classified
 accuracy <- mean(predicted_class == as.character(bioimplant$attrition))
-cat("Predicted Accuracy:")
-accuracy
+cat("Predicted accuracy:", round(accuracy, 4), "\n")
+
 
 # Majority class accuracy: predict "No" for every employee
 majority_accuracy <- mean(bioimplant$attrition == "No")
-cat("Majority Accuracy:")
-majority_accuracy
+cat("Majority accuracy:", round(majority_accuracy, 4), "\n")
 ```
 
 ### Model vs predicted comparison:
@@ -127,39 +126,55 @@ scaled_log_model <- glm(
 # summary(scaled_log_model)
 
 # Find the largest coefficient by absolute value, excluding the intercept
+# Extracting the coefficients
 coefs <- coef(scaled_log_model)
+# Removing the intercept
 coefs <- coefs[names(coefs) != "(Intercept)"]
+# Taking the absolute value, then finding the largest value, but preserves original value
 coefs[which.max(abs(coefs))]
 ```
 
-
-## Q4. Based on the above logistic regression model (and, specifically, on the coefficient with the largest effect size that you identified above), how might company policy be changed to reduce employee attrition?
-
-<!-- Describe your proposed policy change.
-
-Estimate and explain the change in churn probability associated with that policy change. -->
+## Q4. The largest absolute coefficient was associated with the Human Resources job role. What change in predicted attrition does the model estimate if HR employees receive one additional training session per year, and why might training be a useful policy to examine?
 
 ```{r}
+# Predict current attrition probabilities
 p_current <- predict(scaled_log_model, type = "response")
 
-no_overtime <- bioimplant_scaled
-no_overtime$over_time <- "No"
+# Scenario: HR employees receive one additional training session
+training_policy <- bioimplant_scaled
+hr_employees <- training_policy$job_role == "Human Resources"
 
-p_no_overtime <- predict(
+training_sd <- sd(bioimplant$training_times_last_year, na.rm = TRUE)
+training_max_scaled <- (max(bioimplant$training_times_last_year, na.rm = TRUE) -
+  mean(bioimplant$training_times_last_year, na.rm = TRUE)) /
+  training_sd
+
+training_policy$training_times_last_year[hr_employees] <- pmin(
+  training_policy$training_times_last_year[hr_employees] + 1 / training_sd,
+  training_max_scaled
+)
+
+p_training_hr <- predict(
   scaled_log_model,
-  newdata = no_overtime,
+  newdata = training_policy,
   type = "response"
 )
 
-mean(p_current)
-mean(p_no_overtime)
-mean(p_no_overtime) - mean(p_current)
+# Change in average predicted attrition probability for HR employees, in percentage points
+100 * (mean(p_training_hr[hr_employees]) - mean(p_current[hr_employees]))
+
+# Change in the company's average predicted attrition probability, in percentage points
+100 * (mean(p_training_hr) - mean(p_current))
 ```
+
+The model identifies the HR job role as the group to examine. I modeled a change where HR employees attended one additional training session. The model predicts a lower average attrition probability (-2.34 percentage points) under this scenario.
 
 ## Q5. What should Angelica say in her report? Please include quantitative details from your answers to the questions above.
 
-BioImplants’ overall attrition rate is **16.1%** (237 of 1,470 employees). Attrition varies by department and job role: it is highest among Sales Representatives at **39.8%**, followed by Laboratory Technicians at **23.9%** and Human Resources employees in the Human Resources role at **23.1%**.
+BioImplants’ overall attrition rate is 16.1%. Attrition varies by job role: Sales Representatives had the highest observed rate at 39.8% (33 of 83 employees), while 23.1% of Human Resources employees left (12 of 52). These are observed rates and do not account for differences in other employee characteristics.
 
-A logistic regression using the predictors other than employee number correctly classified **89.3%** of employees in this dataset at a 0.5 decision threshold. That is **5.4 percentage points** above the **83.9%** accuracy from predicting “No” attrition for everyone, the majority class. This is in-sample accuracy and should not be treated as evidence of how well the model will predict attrition for new employees.
+The logistic regression correctly classified 89.25% of employees, compared with 83.88% accuracy from predicting “No” for everyone—a 5.37 percentage-point difference. This is training accuracy because the model was evaluated on the same data used to fit it, so its performance on new employees may be lower.
 
-In the standardized model, refit without department because it overlaps with job role, the largest coefficient was for working overtime (**1.974**, or about **7.2 times the odds** of attrition compared with not working overtime, holding other predictors constant). This suggests reviewing overtime practices—for example, by improving staffing and workload distribution. In a model-based scenario that changes every employee’s overtime status to “No” while holding other predictors fixed, the average predicted attrition probability falls from **16.1% to 10.3%**, a decrease of about **5.9 percentage points**. This is an estimate based on the model’s associations, not proof that reducing overtime would cause attrition to fall by that amount.
+The largest absolute coefficient was for the Human Resources job role, at +14.02 on the log-odds scale. This does not mean attrition increased by 14%. Because the estimate is unusually large, I would check the model diagnostics before treating it as a reliable measure. Sales Representatives had the highest observed attrition rate, so both groups may warrant further review.
+
+In a model-based scenario, I increased training by one session for HR employees, up to the highest training value observed in the data. The model predicted a 2.34 percentage-point decrease in average attrition probability for HR employees and a 0.083 percentage-point decrease company-wide. These are estimates from the fitted model, not proof that training will cause attrition to fall. BioImplants could pilot the training policy for HR employees and compare actual results over time.
